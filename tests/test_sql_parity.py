@@ -8,7 +8,7 @@ from pathlib import Path
 import polars as pl
 import pytest
 
-from conftest import EXPECTED, FIXTURE, ROOT
+from conftest import EXPECTED, FIXTURE, ROOT, to_polars
 from outage_forecast.config import Config
 from outage_forecast.features.history import HISTORY_NAMES, OutageHistory, history_features, model_outage_view
 from outage_forecast.inputs import read_mcc, read_outages
@@ -53,7 +53,7 @@ def assert_same(sql_value, py_value, label):
 
 
 def test_history_features_match_python(warehouse):
-    sql = warehouse.sql('SELECT * FROM gold.history_features').pl()
+    sql = to_polars(warehouse.sql('SELECT * EXCLUDE (issue_time) FROM gold.history_features'))
     assert sql.height == warehouse.sql('SELECT count(*) FROM silver.issues').fetchall()[0][0]
     expected = python_history(FIXTURE, sql)
     for row in sql.iter_rows(named=True):
@@ -66,7 +66,7 @@ def test_labels_match_scorer(warehouse, predictions_csv):
     import scoring
 
     joined = scoring.frames(predictions_csv, FIXTURE, Config.load())
-    sql = warehouse.sql('SELECT task, arch, county, issue_s, target_s, truth_x FROM gold.labels').pl()
+    sql = to_polars(warehouse.sql('SELECT task, arch, county, issue_s, target_s, truth_x FROM gold.labels'))
     for task in ('A', 'B'):
         py = joined[task].select('task', 'arch', 'county', pl.col('issue').alias('issue_s'), pl.col('target').alias('target_s'), 'truth')
         both = py.join(sql.filter(pl.col('task') == task), on=['task', 'arch', 'county', 'issue_s', 'target_s'], how='full', coalesce=True)
@@ -123,11 +123,11 @@ def test_sql_features_ignore_future_data(fixture_copy):
     """The no-lookahead property for the SQL features (same perturbation as tests/test_no_lookahead.py)."""
     from test_no_lookahead import CUTOFF, perturb_future
 
-    before = build(FIXTURE).sql('SELECT * FROM gold.history_features').pl()
+    before = to_polars(build(FIXTURE).sql('SELECT * EXCLUDE (issue_time) FROM gold.history_features'))
     perturb_future(fixture_copy)
-    after = build(fixture_copy).sql('SELECT * FROM gold.history_features').pl()
-    past = lambda f: f.filter(pl.col('issue_time') <= CUTOFF).sort('task', 'county', 'issue_s')  # noqa: E731
-    future = lambda f: f.filter(pl.col('issue_time') > CUTOFF).sort('task', 'county', 'issue_s')  # noqa: E731
+    after = to_polars(build(fixture_copy).sql('SELECT * EXCLUDE (issue_time) FROM gold.history_features'))
+    past = lambda f: f.filter(pl.col('issue_s') <= CUTOFF.timestamp()).sort('task', 'county', 'issue_s')  # noqa: E731
+    future = lambda f: f.filter(pl.col('issue_s') > CUTOFF.timestamp()).sort('task', 'county', 'issue_s')  # noqa: E731
     assert past(before).height > 0
     assert past(before).equals(past(after))
     assert not future(before).equals(future(after))
@@ -140,7 +140,7 @@ def test_full_window_matches(tmp_path):
     if not predictions.is_file():
         pytest.skip('run `make predict` first')
     con = build(FULL_2025, predictions=predictions)
-    sql = con.sql('SELECT * FROM gold.history_features').pl()
+    sql = to_polars(con.sql('SELECT * EXCLUDE (issue_time) FROM gold.history_features'))
     expected = python_history(FULL_2025, sql)
     for row in sql.iter_rows(named=True):
         py = expected[row['task'], row['county'], int(row['issue_s'])]

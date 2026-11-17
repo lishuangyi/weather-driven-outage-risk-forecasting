@@ -46,3 +46,8 @@ def fixture_predictions(tmp_path_factory) -> pl.DataFrame:
     out = tmp_path_factory.mktemp('pred') / 'predictions.csv'
     assert run_inference(FIXTURE, out) == 0
     return read_predictions(out)
+
+
+def to_polars(relation) -> pl.DataFrame:
+    """DuckDB result as a polars frame without pyarrow (not a dependency of this project)."""
+    return pl.DataFrame(relation.fetchall(), schema=relation.columns, orient='row', infer_schema_length=None)
