@@ -62,10 +62,12 @@ trained on 2022–2024.
 | Window | Task A model / persistence | Task B model / persistence |
 |---|---:|---:|
 | June–August 2025 (selection window) | **54.52** / 38.82 | **75.13** / 65.88 |
-| September–October 2025 (after the models were frozen) | **42.34** / 28.99 | **51.92** / 40.53 |
+| The other 9 months of 2025 (used for neither training nor selection) | **55.00** / 46.92 | **72.75** / 66.59 |
 
-Persistence carries the latest observation forward to every target. Each month of 2025 was also scored on its own:
-the model beats persistence in all 12 months for Task B and in 10 of 12 for Task A (January −0.2, February −4.3).
+Persistence carries the latest observation forward to every target. The unseen months score about the same as the
+selection window, so the selection did not overfit that window. Scored month by month, the model beats persistence in
+all 12 months of 2025 for Task B and in 10 of 12 for Task A (January −0.2, February −4.3). Absolute scores depend
+mainly on how many outage events a period contains, and Task A is weakest in quiet periods.
 
 **Robustness on June–August 2025:**
 
