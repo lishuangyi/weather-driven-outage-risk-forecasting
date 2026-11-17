@@ -23,6 +23,10 @@ the storm, and the 28 June forecast follows the restoration, though it decays mo
   silver and gold layers. It covers point-in-time features (as-of joins on publication time), labels, data-quality
   checks and the challenge metric. Tests check that it reproduces the 30 Python history features and the official
   scores to within floating-point rounding (see [docs/SQL.md](docs/SQL.md)).
+- **Training from scratch.** A reference trainer fits one XGBoost model per task on the SQL training table. It uses
+  a chronological protocol: select on 2023, test on 2024, final model evaluated on 2025. The evaluation is
+  candid: the trainer beats persistence on the 2024 test, and on 2025 it comes out below the frozen ensemble
+  ([docs/TRAINING.md](docs/TRAINING.md)).
 - **An end-to-end data pipeline**, from public cloud archives (`s3://hrrrzarr`, `s3://noaa-mrms-pds`, Figshare) to
   county-level Parquet tables. HRRR forecasts are aggregated over exact county polygons.
 
@@ -34,6 +38,7 @@ cd weather-driven-outage-risk-forecasting
 make setup          # pip install -r requirements/cpu.txt -r requirements/dev.txt && pip install -e .
 make models data    # frozen models (39 MB) + June–August 2025 inputs (75 MB), SHA-256 verified
 make predict        # out/predictions.csv: 618,240 rows
+make train          # optional: reference model from scratch (needs the 2022–2025 inputs, ≈3 min on GPU)
 make warehouse      # out/warehouse.duckdb: features, labels, quality checks, scores by county/lead/month (≈5 s)
 make demo           # out/demo/summary.html: one week in Harris County with scores and charts
 make test           # end-to-end, no-lookahead, SQL-vs-Python parity, input-validation and metric tests
@@ -74,6 +79,17 @@ selection window, so the selection did not overfit that window. Scored month by 
 all 12 months of 2025 for Task B and in 10 of 12 for Task A (January −0.2, February −4.3). Absolute scores depend
 mainly on how many outage events a period contains, and Task A is weakest in quiet periods.
 
+**Reference model trained from scratch** (`make train`, one XGBoost per task, selected on 2023 only):
+
+| Evaluation | Reference | Persistence | Frozen ensemble |
+|---|---:|---:|---:|
+| 2024 (test year) | 53.43 / 73.04 | 49.75 / 69.56 | in training data |
+| 2025 full year | 42.60 / 71.12 | 43.92 / 66.33 | 54.88 / 73.44 |
+
+The simple model recovers most of the Task B skill. On Task A it loses to persistence during the multi-day Los
+Angeles wildfire outages of January–February 2025. Those are the events that the frozen ensemble's event features
+and GRU are built for ([docs/TRAINING.md](docs/TRAINING.md#results)).
+
 **Robustness on June–August 2025:**
 
 | Condition | Task A | Task B |
@@ -105,14 +121,15 @@ MRMS radar      ─┘   (published ≤ T only)  ├─ radar: reflectivity expo
 | A | GRU (0.4), joint feature tree (0.4), Q95 tail model (0.2) | no radar → radar-free tree; no weather → weather-free tree; no history → history-free tree |
 | B | joint Tweedie tree (0.5), GRU (0.5) | no radar → five-family tree system; no history → monthly climatology |
 
-See [docs/MODEL.md](docs/MODEL.md) for the model details, [docs/SQL.md](docs/SQL.md) for the SQL warehouse, [docs/DATA.md](docs/DATA.md) for sources, licences and
+See [docs/MODEL.md](docs/MODEL.md) for the model details, [docs/SQL.md](docs/SQL.md) for the SQL warehouse,
+[docs/TRAINING.md](docs/TRAINING.md) for training from scratch, [docs/DATA.md](docs/DATA.md) for sources, licences and
 availability rules, and [docs/DEMO.md](docs/DEMO.md) for the demo tool.
 
 ## Repository layout
 
 | Path | Content |
 |---|---|
-| `src/outage_forecast/` | inference package: input validation, point-in-time features, model members, blending, output; `warehouse.py` runs the SQL layers |
+| `src/outage_forecast/` | inference package: input validation, point-in-time features, model members, blending, output; `warehouse.py` runs the SQL layers; `reference.py` trains and applies the reference model |
 | `sql/` | DuckDB warehouse: `bronze/`, `silver/`, `gold/` layers and `analysis/` queries ([docs/SQL.md](docs/SQL.md)) |
 | `configs/inference.json` | the single runtime configuration: feature schemas, member weights, fallback routes, model SHA-256 |
 | `data_pipeline/` | builds the input tables from public archives (HRRR, MRMS, EAGLE-I, Census polygons) |
@@ -129,8 +146,8 @@ availability rules, and [docs/DEMO.md](docs/DEMO.md) for the demo tool.
 - Only the five counties and the issue grid above are supported. The trees use the weather of 35 neighbouring counties
   as well.
 - Task B models the 15-minute series; 5-minute detail is not modelled.
-- Training code is being rewritten as a clean reference pipeline (see [docs/ROADMAP.md](docs/ROADMAP.md)). The
-  released model weights come from the original experiment code.
+- The frozen ensemble's weights come from the original experiment code, which is not included. The reference trainer
+  (`outage_forecast.reference`) is the reproducible training path, and it is simpler and weaker on Task A.
 
 ## Background and credits
 

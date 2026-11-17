@@ -22,7 +22,9 @@ input directory (Parquet / CSV)
        └─ gold    point-in-time history per issue                     gold.visible_history
                   as-of lags, window aggregates, 30 features          gold.history_lags, .history_windows, .history_features
                   final observations and request labels               gold.final_outages, .labels
-                  model and persistence cases next to their truth     gold.scored_cases           (needs --predictions)
+                  weather and radar as of the issue                   gold.weather_as_of, .radar_as_of
+                  model-ready training/prediction table               gold.examples               (reference model)
+       └─ scoring model and persistence cases next to their truth     gold.scored_cases           (needs --predictions)
                   metric by dimension, headline scores                gold.metrics, .scoreboard   (needs --predictions)
 ref: architectures (x0, k) and request grids from configs/inference.json
 ```
@@ -37,6 +39,7 @@ ref: architectures (x0, k) and request grids from configs/inference.json
 | `gold.history_features` | (task, county, issue) | the 30 model columns, named as in `features/history.py` |
 | `gold.final_outages` | (county, observation time) | final value: latest revision of each observation |
 | `gold.labels` | request | Task A: mean of the 4 quarter-hours ending at T; Task B: value at T or the 15-minute value held |
+| `gold.examples` | (task, county, issue, target) | 79 features as of the issue + label: the training table of [TRAINING.md](TRAINING.md) |
 | `gold.scored_cases` | (model, scorable request) | `model` = the predictions file, `persistence` = latest visible value held |
 | `gold.metrics` | (model, task, dimension, group) | dimensions: pooled, architecture, county, lead band, month |
 

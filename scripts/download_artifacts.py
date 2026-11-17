@@ -3,6 +3,7 @@
     python scripts/download_artifacts.py models               # frozen models (39 MB)  -> models/
     python scripts/download_artifacts.py test-window          # 2025 evaluation inputs (75 MB) -> data/inputs/input_2025/
     python scripts/download_artifacts.py training             # 2022-2024 full-year inputs (0.8 GB) -> data/inputs/
+    python scripts/download_artifacts.py reference            # reference models (0.4 MB) -> models/reference/
     python scripts/download_artifacts.py all
 
 Assets and checksums are pinned in artifacts/release_v1.0.0.json. Downloads go through the GitHub CLI (`gh`) when it is
@@ -69,7 +70,7 @@ def main() -> int:
         archive = CACHE / asset['name']
         if not (archive.is_file() and sha256(archive) == asset['sha256']):
             print(f"downloading {asset['name']} ({asset['bytes'] / 1e6:.0f} MB)", flush=True)
-            fetch(manifest['repository'], manifest['release'], asset['name'], archive)
+            fetch(manifest['repository'], asset.get('release', manifest['release']), asset['name'], archive)
         digest = sha256(archive)
         if digest != asset['sha256']:
             print(f"checksum mismatch for {asset['name']}: {digest}", file=sys.stderr)

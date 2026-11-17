@@ -8,9 +8,10 @@
 Layers (SQL files in sql/, executed in name order):
   bronze  views over the delivered Parquet/CSV files (nothing copied or changed)
   silver  typed tables with an explicit grain, every record revision kept; data-quality checks
-  gold    point-in-time outage history per issue, the 30 history features, request labels, and with --predictions
-          the scored cases (model and persistence baseline), metrics by dimension and the scoreboard
-Reference tables (schema ref) come from configs/inference.json: architectures (x0, k) and the request grids.
+  gold    point-in-time outage history per issue, the 30 history features, weather and radar as of the issue,
+          request labels, and model-ready examples (features + label) for the reference model
+  scoring with --predictions: the scored cases (model and persistence baseline), metrics by dimension, scoreboard
+Reference tables (schema ref) come from configs/inference.json: architectures (x0, k), counties, request grids.
 
 The warehouse is a second, independent implementation next to the Python pipeline; tests/test_sql_parity.py checks
 that both give the same features, labels and scores.
@@ -25,6 +26,9 @@ from pathlib import Path
 import duckdb
 
 from .config import PACKAGE_ROOT, Config
+from .inputs import VARIABLES
+
+WEATHER_STATS = ('mean', 'max')   # statistics of each HRRR variable used by the reference model
 
 SQL_DIR = PACKAGE_ROOT / 'sql'
 TABLES = {'requests': 'requests/forecast_requests', 'mcc': 'mcc/MCC', 'outages': 'eaglei/eaglei_outages',
@@ -78,11 +82,24 @@ def reference_tables(con: duckdb.DuckDBPyConnection, config: Config) -> None:
     con.execute('CREATE OR REPLACE TABLE ref.architectures (arch VARCHAR PRIMARY KEY, x0 DOUBLE, k DOUBLE)')
     con.executemany('INSERT INTO ref.architectures VALUES (?, ?, ?)',
                     [(arch, float(x0), float(risk['k'])) for arch, x0 in risk['x0'].items()])
+    con.execute('CREATE OR REPLACE TABLE ref.counties (county VARCHAR PRIMARY KEY, county_index INTEGER)')
+    con.executemany('INSERT INTO ref.counties VALUES (?, ?)', [(c, i) for i, c in enumerate(sorted(config.counties))])
     con.execute('CREATE OR REPLACE TABLE ref.request_grid (task VARCHAR PRIMARY KEY, lead_min_minutes INTEGER, '
                 'lead_max_minutes INTEGER, lead_step_minutes INTEGER, issue_hours_utc INTEGER[])')
     con.executemany('INSERT INTO ref.request_grid VALUES (?, ?, ?, ?, ?)',
                     [(task, g['lead_min_minutes'], g['lead_max_minutes'], g['lead_step_minutes'], g['issue_hours_utc'])
                      for task, g in config['requests'].items()])
+
+
+def weather_columns(con: duckdb.DuckDBPyConnection) -> str:
+    """Select list of the HRRR statistics used downstream; a statistic missing from the input becomes NULL."""
+    present = {name for (name, *_rest) in con.execute('DESCRIBE bronze.weather').fetchall()}
+    items = []
+    for variable in VARIABLES:
+        for stat in WEATHER_STATS:
+            source, alias = f'{variable}__{stat}', f'wx_{variable.lower()}_{stat}'
+            items.append(f'TRY_CAST("{source}" AS DOUBLE) AS {alias}' if source in present else f'NULL::DOUBLE AS {alias}')
+    return ',\n       '.join(items)
 
 
 def build(input_dir: Path, db: Path | str = ':memory:', predictions: Path | None = None, lookback_minutes: int = 4320,
@@ -93,8 +110,8 @@ def build(input_dir: Path, db: Path | str = ':memory:', predictions: Path | None
     if db != ':memory:':
         Path(db).parent.mkdir(parents=True, exist_ok=True)
         Path(db).unlink(missing_ok=True)
-    con = duckdb.connect(str(db))
-    con.execute("SET TimeZone = 'UTC'")
+    con = duckdb.connect(str(db), config={'TimeZone': 'UTC'})
+    con.execute('SET enable_progress_bar = false')
     for schema in ('ref', 'bronze', 'silver', 'gold'):
         con.execute(f'CREATE SCHEMA IF NOT EXISTS {schema}')
     values = {'lookback_minutes': str(int(lookback_minutes))}
@@ -105,12 +122,12 @@ def build(input_dir: Path, db: Path | str = ':memory:', predictions: Path | None
         values[table] = source(path) if path else f'({EMPTY[table]})'
     reference_tables(con, config)
     run_layer(con, 'bronze', values)
+    values['weather_columns'] = weather_columns(con)
     run_layer(con, 'silver', values)
-    for path in sorted((SQL_DIR / 'gold').glob('*.sql')):
-        if path.name >= '04' and predictions is None:   # scoring needs predictions
-            break
-        values['predictions'] = source(Path(predictions).resolve()) if predictions else ''
-        con.execute(render(path.read_text(encoding='utf-8'), values))
+    run_layer(con, 'gold', values)
+    if predictions is not None:
+        values['predictions'] = source(Path(predictions).resolve())
+        run_layer(con, 'scoring', values)
     return con
 
 

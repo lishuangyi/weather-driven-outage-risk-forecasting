@@ -29,8 +29,10 @@ SELECT 'model' AS model, t.task, t.arch, t.county, t.issue_s, t.target_s, t.lead
 FROM truth t
 JOIN silver.predictions p USING (task, arch, county, issue_s, target_s)
 UNION ALL
--- persistence: the latest observation visible at the issue time, held for every lead (0 when there is none)
+-- persistence: the latest observation visible at the issue time, held for every lead (0 when there is none);
+-- scored on exactly the cases of the predictions file, so both rows of the scoreboard are comparable
 SELECT 'persistence', t.task, t.arch, t.county, t.issue_s, t.target_s, t.lead_minutes, t.issue_time,
        t.truth_x, t.true_risk, coalesce(h.hist_latest_x, 0), risk(coalesce(h.hist_latest_x, 0), t.x0, t.k)
 FROM truth t
-JOIN gold.history_features h USING (task, county, issue_s);
+JOIN gold.history_features h USING (task, county, issue_s)
+WHERE (t.task, t.arch, t.county, t.issue_s, t.target_s) IN (SELECT (task, arch, county, issue_s, target_s) FROM silver.predictions);

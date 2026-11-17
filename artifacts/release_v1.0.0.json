@@ -49,6 +49,15 @@
       "bytes": 292382720,
       "sha256": "3152608222d1405d0d591a49f643da74462629ea5d8a65e455d1aa17e0551b2e",
       "description": "Full-year inputs 2025 (contains the evaluation window)"
+    },
+    {
+      "name": "reference-models-v1.1.0.tar.gz",
+      "group": "reference",
+      "release": "v1.1.0",
+      "extract_to": ".",
+      "bytes": 390687,
+      "sha256": "76dc60ddb1ff35806701aa7c2db0e4ed38ef09870533cca7e828fafb088fe150",
+      "description": "Reference XGBoost models trained from scratch by outage_forecast.reference (2022-2024)"
     }
   ]
 }

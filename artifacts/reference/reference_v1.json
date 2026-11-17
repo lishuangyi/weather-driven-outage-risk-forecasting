@@ -1,0 +1,250 @@
+{
+  "features": [
+    "lead_minutes",
+    "target_hour_sin",
+    "target_hour_cos",
+    "day_sin",
+    "day_cos",
+    "county_index",
+    "log_customers",
+    "hist_latest_x",
+    "hist_latest_observation_age_minutes",
+    "hist_available",
+    "hist_missing_flags",
+    "hist_lag_15m_x",
+    "hist_lag_30m_x",
+    "hist_lag_60m_x",
+    "hist_lag_120m_x",
+    "hist_lag_180m_x",
+    "hist_lag_360m_x",
+    "hist_lag_720m_x",
+    "hist_lag_1440m_x",
+    "roll_mean_60",
+    "roll_max_60",
+    "roll_min_60",
+    "roll_mean_180",
+    "roll_max_180",
+    "roll_min_180",
+    "roll_mean_360",
+    "roll_max_360",
+    "roll_min_360",
+    "roll_mean_720",
+    "roll_max_720",
+    "roll_min_720",
+    "roll_mean_1440",
+    "roll_max_1440",
+    "roll_min_1440",
+    "slope_60",
+    "slope_180",
+    "slope_360",
+    "wx_run_age_h",
+    "wx_tmp_mean",
+    "wx_tmp_max",
+    "wx_dpt_mean",
+    "wx_dpt_max",
+    "wx_ugrd_mean",
+    "wx_ugrd_max",
+    "wx_vgrd_mean",
+    "wx_vgrd_max",
+    "wx_gust_mean",
+    "wx_gust_max",
+    "wx_cape_mean",
+    "wx_cape_max",
+    "wx_rh_mean",
+    "wx_rh_max",
+    "wx_pres_mean",
+    "wx_pres_max",
+    "wx_mslma_mean",
+    "wx_mslma_max",
+    "wx_tcdc_mean",
+    "wx_tcdc_max",
+    "wx_vis_mean",
+    "wx_vis_max",
+    "wx_prate_mean",
+    "wx_prate_max",
+    "wx_apcp_1hr_acc_fcst_mean",
+    "wx_apcp_1hr_acc_fcst_max",
+    "wx_asnow_acc_fcst_mean",
+    "wx_asnow_acc_fcst_max",
+    "rx_frames_1h",
+    "rx_f35_max_1h",
+    "rx_f50_max_1h",
+    "rx_dbz_max_1h",
+    "rx_ring35_max_1h",
+    "rx_f35_max_6h",
+    "rx_f50_max_6h",
+    "rx_dbz_max_6h",
+    "rx_ring35_max_6h",
+    "rx_f35_max_24h",
+    "rx_f50_max_24h",
+    "rx_dbz_max_24h",
+    "rx_f35_mean_24h"
+  ],
+  "params": {
+    "objective": "reg:tweedie",
+    "tweedie_variance_power": 1.3,
+    "eval_metric": "tweedie-nloglik@1.3",
+    "eta": 0.05,
+    "max_depth": 7,
+    "min_child_weight": 10,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "lambda": 1.0,
+    "tree_method": "hist",
+    "seed": 42
+  },
+  "round_grid": [
+    25,
+    50,
+    100,
+    200,
+    400,
+    800,
+    1200
+  ],
+  "variants": [
+    "plain",
+    "anchored"
+  ],
+  "rows": {
+    "2022": {
+      "A": 87600,
+      "B": 525600
+    },
+    "2023": {
+      "A": 87600,
+      "B": 525600
+    },
+    "2024": {
+      "A": 87840,
+      "B": 527040
+    },
+    "2025": {
+      "A": 87600,
+      "B": 525600
+    }
+  },
+  "selection_2023": {
+    "A": {
+      "persistence": 50.85,
+      "plain": {
+        "25": 56.29,
+        "50": 57.31,
+        "100": 57.62,
+        "200": 57.14,
+        "400": 56.63,
+        "800": 55.97,
+        "1200": 55.58
+      },
+      "anchored": {
+        "25": 55.63,
+        "50": 57.08,
+        "100": 57.13,
+        "200": 56.77,
+        "400": 56.71,
+        "800": 56.39,
+        "1200": 56.11
+      }
+    },
+    "B": {
+      "persistence": 72.32,
+      "plain": {
+        "25": 74.68,
+        "50": 75.65,
+        "100": 75.98,
+        "200": 75.91,
+        "400": 75.92,
+        "800": 75.7,
+        "1200": 75.54
+      },
+      "anchored": {
+        "25": 75.28,
+        "50": 76.31,
+        "100": 76.72,
+        "200": 76.75,
+        "400": 76.74,
+        "800": 76.5,
+        "1200": 76.34
+      }
+    }
+  },
+  "choice": {
+    "A": {
+      "variant": "plain",
+      "rounds": 100
+    },
+    "B": {
+      "variant": "anchored",
+      "rounds": 200
+    }
+  },
+  "test_2024": {
+    "reference": {
+      "task_a": 53.43,
+      "task_b": 73.04
+    },
+    "persistence": {
+      "task_a": 49.75,
+      "task_b": 69.56
+    }
+  },
+  "eval_2025_full_year": {
+    "reference": {
+      "task_a": 42.6,
+      "task_b": 71.12
+    },
+    "persistence": {
+      "task_a": 43.92,
+      "task_b": 66.33
+    },
+    "frozen ensemble": {
+      "task_a": 54.88,
+      "task_b": 73.44
+    }
+  },
+  "eval_2025_jun_aug": {
+    "reference": {
+      "task_a": 41.29,
+      "task_b": 71.39
+    },
+    "persistence": {
+      "task_a": 38.69,
+      "task_b": 65.88
+    },
+    "frozen ensemble": {
+      "task_a": 54.45,
+      "task_b": 75.13
+    }
+  },
+  "top_features": {
+    "A": [
+      "roll_max_720",
+      "roll_max_1440",
+      "roll_max_180",
+      "rx_f50_max_24h",
+      "roll_mean_360",
+      "wx_pres_max",
+      "roll_mean_720",
+      "wx_asnow_acc_fcst_mean",
+      "wx_asnow_acc_fcst_max",
+      "rx_f35_max_6h",
+      "hist_latest_x",
+      "wx_gust_mean"
+    ],
+    "B": [
+      "hist_latest_x",
+      "hist_lag_15m_x",
+      "roll_mean_1440",
+      "hist_lag_30m_x",
+      "wx_gust_mean",
+      "wx_pres_max",
+      "wx_apcp_1hr_acc_fcst_mean",
+      "lead_minutes",
+      "target_hour_sin",
+      "wx_ugrd_mean",
+      "rx_ring35_max_1h",
+      "hist_latest_observation_age_minutes"
+    ]
+  },
+  "seconds": 195
+}
