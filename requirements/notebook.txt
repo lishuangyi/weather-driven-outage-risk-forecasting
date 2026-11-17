@@ -1,0 +1,4 @@
+# Only for the notebook front end notebooks/demo.ipynb (VS Code or Jupyter); infer.py and demo/run_demo.py do not need them.
+# Install on top of requirements/cpu.txt; they change none of the locked packages.
+ipykernel==7.4.0
+matplotlib==3.11.1

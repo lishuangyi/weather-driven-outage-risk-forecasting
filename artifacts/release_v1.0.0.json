@@ -1,0 +1,54 @@
+{
+  "repository": "lishuangyi/weather-driven-outage-risk-forecasting",
+  "release": "v1.0.0",
+  "assets": [
+    {
+      "name": "models-v1.0.0.tar.gz",
+      "group": "models",
+      "extract_to": ".",
+      "bytes": 39390456,
+      "sha256": "61fa18020a6a09a49ec50ca78ab4fa3b01246c713b1cfb91686d73b176e15c4b",
+      "description": "Frozen XGBoost boosters and GRU weights (126 files)"
+    },
+    {
+      "name": "input_2025.tar",
+      "group": "test-window",
+      "extract_to": "data/inputs",
+      "bytes": 74577920,
+      "sha256": "a027c6a8b5f83a9b4636c0c965426564d447e5bad0f213f30b00689738460757",
+      "description": "Inputs of the evaluation window 2025-06-01 .. 2025-08-31 (618,240 requests)"
+    },
+    {
+      "name": "input_2022_full.tar",
+      "group": "training",
+      "extract_to": "data/inputs",
+      "bytes": 268974080,
+      "sha256": "599663b138704f4c78c675ed1897a28b48e958937799a3e4530d4ed43303478a",
+      "description": "Full-year inputs 2022 (training year)"
+    },
+    {
+      "name": "input_2023_full.tar",
+      "group": "training",
+      "extract_to": "data/inputs",
+      "bytes": 276162560,
+      "sha256": "fd35c80cd2629b12b80831533c91ee66b5e8d602241cb7cdcbe5836b245c51b6",
+      "description": "Full-year inputs 2023 (training year)"
+    },
+    {
+      "name": "input_2024_full.tar",
+      "group": "training",
+      "extract_to": "data/inputs",
+      "bytes": 287938560,
+      "sha256": "6d39d960f8d7987066797989a7bfc1b36dd7b28023a894afe716efbcef23c927",
+      "description": "Full-year inputs 2024 (training year)"
+    },
+    {
+      "name": "input_2025_full.tar",
+      "group": "full-2025",
+      "extract_to": "data/inputs",
+      "bytes": 292382720,
+      "sha256": "3152608222d1405d0d591a49f643da74462629ea5d8a65e455d1aa17e0551b2e",
+      "description": "Full-year inputs 2025 (contains the evaluation window)"
+    }
+  ]
+}

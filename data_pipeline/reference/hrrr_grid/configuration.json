@@ -1,0 +1,55 @@
+{
+  "chunks": [
+    "0.0.9",
+    "0.1.6",
+    "0.1.9",
+    "0.2.1",
+    "0.2.2",
+    "0.3.1",
+    "0.3.2",
+    "0.4.8",
+    "0.5.10"
+  ],
+  "levels": {
+    "APCP_1hr_acc_fcst": "surface",
+    "ASNOW_acc_fcst": "surface",
+    "CAPE": "surface",
+    "DPT": "2m_above_ground",
+    "GUST": "surface",
+    "MSLMA": "mean_sea_level",
+    "PRATE": "surface",
+    "PRES": "surface",
+    "RH": "2m_above_ground",
+    "TCDC": "entire_atmosphere",
+    "TMP": "2m_above_ground",
+    "UGRD": "10m_above_ground",
+    "VGRD": "10m_above_ground",
+    "VIS": "surface"
+  },
+  "spatial_plan_sha256": "828fddf546c5fceeab8f7a89a8bb3c0f43b25b9680aee4307e4e7ab94fd82cd3",
+  "stats": [
+    "mean",
+    "std",
+    "max",
+    "p95"
+  ],
+  "time_policy": "actual time coordinate; missing native times not interpolated",
+  "units_policy": "preserve attrs; unknown remains unknown; no invented precipitation/snow units",
+  "variables": [
+    "TMP",
+    "DPT",
+    "UGRD",
+    "VGRD",
+    "GUST",
+    "CAPE",
+    "RH",
+    "PRES",
+    "MSLMA",
+    "TCDC",
+    "VIS",
+    "PRATE",
+    "APCP_1hr_acc_fcst",
+    "ASNOW_acc_fcst"
+  ],
+  "version_policy": "raw availability stores GET response LastModified for provenance; replay cutoff chosen separately; update time is not first publication"
+}

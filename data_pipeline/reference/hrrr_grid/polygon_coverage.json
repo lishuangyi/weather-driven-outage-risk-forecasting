@@ -1,0 +1,626 @@
+{
+  "census_sha256": "9c6e9d9076abce2670d1de255de3710c35ecca00a7005d88e012dec52d95f763",
+  "chunks": [
+    "0.0.9",
+    "0.1.6",
+    "0.1.9",
+    "0.2.1",
+    "0.2.2",
+    "0.3.1",
+    "0.3.2",
+    "0.4.8",
+    "0.5.10"
+  ],
+  "coverage": [
+    {
+      "boundary_area_ratio": 0.05767222837911149,
+      "chunk_ids": [
+        "0.3.1"
+      ],
+      "county": "Kern",
+      "county_area_m2": 21212364319.494793,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 21212364319.494793,
+      "fips_code": "06029",
+      "intersecting_cell_count": 2495,
+      "polygon_coverage_ratio": 1.0,
+      "state": "CA"
+    },
+    {
+      "boundary_area_ratio": 0.10756952378023281,
+      "chunk_ids": [
+        "0.2.1",
+        "0.3.1"
+      ],
+      "county": "Los Angeles",
+      "county_area_m2": 12374073156.68653,
+      "coverage_status": "FULL",
+      "cross_chunk": true,
+      "downloaded_overlap_area_m2": 12374073156.686527,
+      "fips_code": "06037",
+      "intersecting_cell_count": 1525,
+      "polygon_coverage_ratio": 0.9999999999999999,
+      "state": "CA"
+    },
+    {
+      "boundary_area_ratio": 0.16101744566015447,
+      "chunk_ids": [
+        "0.2.1"
+      ],
+      "county": "Orange",
+      "county_area_m2": 2478001466.4737186,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 2478001466.473717,
+      "fips_code": "06059",
+      "intersecting_cell_count": 324,
+      "polygon_coverage_ratio": 0.9999999999999994,
+      "state": "CA"
+    },
+    {
+      "boundary_area_ratio": 0.06929589895948535,
+      "chunk_ids": [
+        "0.2.1",
+        "0.2.2"
+      ],
+      "county": "Riverside",
+      "county_area_m2": 19050093343.499985,
+      "coverage_status": "FULL",
+      "cross_chunk": true,
+      "downloaded_overlap_area_m2": 19050093343.499985,
+      "fips_code": "06065",
+      "intersecting_cell_count": 2266,
+      "polygon_coverage_ratio": 1.0,
+      "state": "CA"
+    },
+    {
+      "boundary_area_ratio": 0.034535154432505,
+      "chunk_ids": [
+        "0.2.1",
+        "0.2.2",
+        "0.3.1",
+        "0.3.2"
+      ],
+      "county": "San Bernardino",
+      "county_area_m2": 52296052240.33024,
+      "coverage_status": "FULL",
+      "cross_chunk": true,
+      "downloaded_overlap_area_m2": 52296052240.330124,
+      "fips_code": "06071",
+      "intersecting_cell_count": 6022,
+      "polygon_coverage_ratio": 0.9999999999999978,
+      "state": "CA"
+    },
+    {
+      "boundary_area_ratio": 0.06835833620334332,
+      "chunk_ids": [
+        "0.2.1",
+        "0.2.2"
+      ],
+      "county": "San Diego",
+      "county_area_m2": 11833949069.07722,
+      "coverage_status": "FULL",
+      "cross_chunk": true,
+      "downloaded_overlap_area_m2": 11833949069.07722,
+      "fips_code": "06073",
+      "intersecting_cell_count": 1406,
+      "polygon_coverage_ratio": 1.0,
+      "state": "CA"
+    },
+    {
+      "boundary_area_ratio": 0.12912612107608143,
+      "chunk_ids": [
+        "0.2.1",
+        "0.3.1"
+      ],
+      "county": "Santa Barbara",
+      "county_area_m2": 9859062497.785723,
+      "coverage_status": "FULL",
+      "cross_chunk": true,
+      "downloaded_overlap_area_m2": 9859062497.78572,
+      "fips_code": "06083",
+      "intersecting_cell_count": 1248,
+      "polygon_coverage_ratio": 0.9999999999999998,
+      "state": "CA"
+    },
+    {
+      "boundary_area_ratio": 0.13230302012192344,
+      "chunk_ids": [
+        "0.2.1",
+        "0.3.1"
+      ],
+      "county": "Ventura",
+      "county_area_m2": 5746245654.445622,
+      "coverage_status": "FULL",
+      "cross_chunk": true,
+      "downloaded_overlap_area_m2": 5746245654.445622,
+      "fips_code": "06111",
+      "intersecting_cell_count": 730,
+      "polygon_coverage_ratio": 1.0,
+      "state": "CA"
+    },
+    {
+      "boundary_area_ratio": 0.12017730332858288,
+      "chunk_ids": [
+        "0.0.9"
+      ],
+      "county": "Broward",
+      "county_area_m2": 3549578809.2476754,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 3549578809.2476697,
+      "fips_code": "12011",
+      "intersecting_cell_count": 447,
+      "polygon_coverage_ratio": 0.9999999999999983,
+      "state": "FL"
+    },
+    {
+      "boundary_area_ratio": 0.10888641687088908,
+      "chunk_ids": [
+        "0.0.9"
+      ],
+      "county": "Collier",
+      "county_area_m2": 7069805824.166418,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 7069805824.166418,
+      "fips_code": "12021",
+      "intersecting_cell_count": 866,
+      "polygon_coverage_ratio": 1.0,
+      "state": "FL"
+    },
+    {
+      "boundary_area_ratio": 0.1524177043620308,
+      "chunk_ids": [
+        "0.0.9"
+      ],
+      "county": "Hendry",
+      "county_area_m2": 3217386693.934434,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 3217386693.934432,
+      "fips_code": "12051",
+      "intersecting_cell_count": 414,
+      "polygon_coverage_ratio": 0.9999999999999994,
+      "state": "FL"
+    },
+    {
+      "boundary_area_ratio": 0.11481756703008651,
+      "chunk_ids": [
+        "0.0.9"
+      ],
+      "county": "Lee",
+      "county_area_m2": 4097460438.557161,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 4097460438.557161,
+      "fips_code": "12071",
+      "intersecting_cell_count": 509,
+      "polygon_coverage_ratio": 1.0,
+      "state": "FL"
+    },
+    {
+      "boundary_area_ratio": 0.1930469701785807,
+      "chunk_ids": [
+        "0.0.9",
+        "0.1.9"
+      ],
+      "county": "Martin",
+      "county_area_m2": 2029857921.6717134,
+      "coverage_status": "FULL",
+      "cross_chunk": true,
+      "downloaded_overlap_area_m2": 2029857921.6717134,
+      "fips_code": "12085",
+      "intersecting_cell_count": 271,
+      "polygon_coverage_ratio": 1.0,
+      "state": "FL"
+    },
+    {
+      "boundary_area_ratio": 0.09419114383073555,
+      "chunk_ids": [
+        "0.0.9"
+      ],
+      "county": "Miami-Dade",
+      "county_area_m2": 6507995544.369494,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 6507995544.369485,
+      "fips_code": "12086",
+      "intersecting_cell_count": 802,
+      "polygon_coverage_ratio": 0.9999999999999986,
+      "state": "FL"
+    },
+    {
+      "boundary_area_ratio": 0.13244698877056094,
+      "chunk_ids": [
+        "0.0.9"
+      ],
+      "county": "Monroe",
+      "county_area_m2": 14471738138.754051,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 14471738138.754044,
+      "fips_code": "12087",
+      "intersecting_cell_count": 1819,
+      "polygon_coverage_ratio": 0.9999999999999994,
+      "state": "FL"
+    },
+    {
+      "boundary_area_ratio": 0.08778596807226492,
+      "chunk_ids": [
+        "0.0.9",
+        "0.1.9"
+      ],
+      "county": "Palm Beach",
+      "county_area_m2": 6442566979.13365,
+      "coverage_status": "FULL",
+      "cross_chunk": true,
+      "downloaded_overlap_area_m2": 6442566979.13365,
+      "fips_code": "12099",
+      "intersecting_cell_count": 781,
+      "polygon_coverage_ratio": 1.0,
+      "state": "FL"
+    },
+    {
+      "boundary_area_ratio": 0.17828355595064957,
+      "chunk_ids": [
+        "0.5.10"
+      ],
+      "county": "York",
+      "county_area_m2": 3307710366.1281505,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 3307710366.1281505,
+      "fips_code": "23031",
+      "intersecting_cell_count": 443,
+      "polygon_coverage_ratio": 1.0,
+      "state": "ME"
+    },
+    {
+      "boundary_area_ratio": 0.18098048399203875,
+      "chunk_ids": [
+        "0.5.10"
+      ],
+      "county": "Essex",
+      "county_area_m2": 2153794830.9193335,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 2153794830.9193325,
+      "fips_code": "25009",
+      "intersecting_cell_count": 286,
+      "polygon_coverage_ratio": 0.9999999999999996,
+      "state": "MA"
+    },
+    {
+      "boundary_area_ratio": 0.2680591340656456,
+      "chunk_ids": [
+        "0.5.10"
+      ],
+      "county": "Middlesex",
+      "county_area_m2": 2200997478.0455604,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 2200997478.0455604,
+      "fips_code": "25017",
+      "intersecting_cell_count": 306,
+      "polygon_coverage_ratio": 1.0,
+      "state": "MA"
+    },
+    {
+      "boundary_area_ratio": 0.6542142221741221,
+      "chunk_ids": [
+        "0.5.10"
+      ],
+      "county": "Suffolk",
+      "county_area_m2": 312332105.3834203,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 312332105.38342017,
+      "fips_code": "25025",
+      "intersecting_cell_count": 62,
+      "polygon_coverage_ratio": 0.9999999999999997,
+      "state": "MA"
+    },
+    {
+      "boundary_area_ratio": 0.164063875734821,
+      "chunk_ids": [
+        "0.4.8"
+      ],
+      "county": "Genesee",
+      "county_area_m2": 1690320538.835528,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 1690320538.835528,
+      "fips_code": "26049",
+      "intersecting_cell_count": 223,
+      "polygon_coverage_ratio": 1.0,
+      "state": "MI"
+    },
+    {
+      "boundary_area_ratio": 0.17199357816139346,
+      "chunk_ids": [
+        "0.4.8"
+      ],
+      "county": "Livingston",
+      "county_area_m2": 1521727328.1554296,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 1521727328.1554296,
+      "fips_code": "26093",
+      "intersecting_cell_count": 202,
+      "polygon_coverage_ratio": 1.0,
+      "state": "MI"
+    },
+    {
+      "boundary_area_ratio": 0.1875083164525444,
+      "chunk_ids": [
+        "0.4.8"
+      ],
+      "county": "Macomb",
+      "county_area_m2": 1484322885.293337,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 1484322885.293337,
+      "fips_code": "26099",
+      "intersecting_cell_count": 196,
+      "polygon_coverage_ratio": 1.0,
+      "state": "MI"
+    },
+    {
+      "boundary_area_ratio": 0.1687865585687763,
+      "chunk_ids": [
+        "0.4.8"
+      ],
+      "county": "Monroe",
+      "county_area_m2": 1764889650.3334284,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 1764889650.3334284,
+      "fips_code": "26115",
+      "intersecting_cell_count": 229,
+      "polygon_coverage_ratio": 1.0,
+      "state": "MI"
+    },
+    {
+      "boundary_area_ratio": 0.14145154828773684,
+      "chunk_ids": [
+        "0.4.8"
+      ],
+      "county": "Oakland",
+      "county_area_m2": 2358632172.6646943,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 2358632172.664681,
+      "fips_code": "26125",
+      "intersecting_cell_count": 299,
+      "polygon_coverage_ratio": 0.9999999999999943,
+      "state": "MI"
+    },
+    {
+      "boundary_area_ratio": 0.18527109280541879,
+      "chunk_ids": [
+        "0.4.8"
+      ],
+      "county": "St. Clair",
+      "county_area_m2": 2176183985.057196,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 2176183985.057196,
+      "fips_code": "26147",
+      "intersecting_cell_count": 290,
+      "polygon_coverage_ratio": 1.0,
+      "state": "MI"
+    },
+    {
+      "boundary_area_ratio": 0.15584164761725441,
+      "chunk_ids": [
+        "0.4.8"
+      ],
+      "county": "Washtenaw",
+      "county_area_m2": 1876425193.8382826,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 1876425193.8382826,
+      "fips_code": "26161",
+      "intersecting_cell_count": 243,
+      "polygon_coverage_ratio": 1.0,
+      "state": "MI"
+    },
+    {
+      "boundary_area_ratio": 0.20645577861765949,
+      "chunk_ids": [
+        "0.4.8"
+      ],
+      "county": "Wayne",
+      "county_area_m2": 1746594534.5624368,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 1746594534.5624368,
+      "fips_code": "26163",
+      "intersecting_cell_count": 235,
+      "polygon_coverage_ratio": 1.0,
+      "state": "MI"
+    },
+    {
+      "boundary_area_ratio": 0.18595043693872365,
+      "chunk_ids": [
+        "0.5.10"
+      ],
+      "county": "Hillsborough",
+      "county_area_m2": 2321725955.9633646,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 2321725955.963358,
+      "fips_code": "33011",
+      "intersecting_cell_count": 310,
+      "polygon_coverage_ratio": 0.9999999999999971,
+      "state": "NH"
+    },
+    {
+      "boundary_area_ratio": 0.17847717023686188,
+      "chunk_ids": [
+        "0.5.10"
+      ],
+      "county": "Merrimack",
+      "county_area_m2": 2486845071.109033,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 2486845071.109033,
+      "fips_code": "33013",
+      "intersecting_cell_count": 323,
+      "polygon_coverage_ratio": 1.0,
+      "state": "NH"
+    },
+    {
+      "boundary_area_ratio": 0.1996708866943572,
+      "chunk_ids": [
+        "0.5.10"
+      ],
+      "county": "Rockingham",
+      "county_area_m2": 2069148769.510746,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 2069148769.510745,
+      "fips_code": "33015",
+      "intersecting_cell_count": 280,
+      "polygon_coverage_ratio": 0.9999999999999996,
+      "state": "NH"
+    },
+    {
+      "boundary_area_ratio": 0.31345441686647973,
+      "chunk_ids": [
+        "0.5.10"
+      ],
+      "county": "Strafford",
+      "county_area_m2": 996292186.2785826,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 996292186.2785807,
+      "fips_code": "33017",
+      "intersecting_cell_count": 150,
+      "polygon_coverage_ratio": 0.9999999999999981,
+      "state": "NH"
+    },
+    {
+      "boundary_area_ratio": 0.13370310106623898,
+      "chunk_ids": [
+        "0.1.6"
+      ],
+      "county": "Brazoria",
+      "county_area_m2": 4280287744.9565067,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 4280287744.956497,
+      "fips_code": "48039",
+      "intersecting_cell_count": 542,
+      "polygon_coverage_ratio": 0.9999999999999978,
+      "state": "TX"
+    },
+    {
+      "boundary_area_ratio": 0.1705110343436368,
+      "chunk_ids": [
+        "0.1.6"
+      ],
+      "county": "Chambers",
+      "county_area_m2": 2311061484.0826693,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 2311061484.0826693,
+      "fips_code": "48071",
+      "intersecting_cell_count": 302,
+      "polygon_coverage_ratio": 1.0,
+      "state": "TX"
+    },
+    {
+      "boundary_area_ratio": 0.16564656468526884,
+      "chunk_ids": [
+        "0.1.6"
+      ],
+      "county": "Fort Bend",
+      "county_area_m2": 2351521449.9715066,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 2351521449.9715066,
+      "fips_code": "48157",
+      "intersecting_cell_count": 312,
+      "polygon_coverage_ratio": 1.0,
+      "state": "TX"
+    },
+    {
+      "boundary_area_ratio": 0.2133894780223222,
+      "chunk_ids": [
+        "0.1.6"
+      ],
+      "county": "Galveston",
+      "county_area_m2": 2322623393.603482,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 2322623393.6034813,
+      "fips_code": "48167",
+      "intersecting_cell_count": 319,
+      "polygon_coverage_ratio": 0.9999999999999998,
+      "state": "TX"
+    },
+    {
+      "boundary_area_ratio": 0.1345204449176817,
+      "chunk_ids": [
+        "0.1.6"
+      ],
+      "county": "Harris",
+      "county_area_m2": 4710683199.919436,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 4710683199.919417,
+      "fips_code": "48201",
+      "intersecting_cell_count": 593,
+      "polygon_coverage_ratio": 0.999999999999996,
+      "state": "TX"
+    },
+    {
+      "boundary_area_ratio": 0.12706721984764444,
+      "chunk_ids": [
+        "0.1.6"
+      ],
+      "county": "Liberty",
+      "county_area_m2": 3113641808.164905,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 3113641808.164905,
+      "fips_code": "48291",
+      "intersecting_cell_count": 396,
+      "polygon_coverage_ratio": 1.0,
+      "state": "TX"
+    },
+    {
+      "boundary_area_ratio": 0.16895800483180953,
+      "chunk_ids": [
+        "0.1.6"
+      ],
+      "county": "Montgomery",
+      "county_area_m2": 2848231513.8851085,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 2848231513.8851085,
+      "fips_code": "48339",
+      "intersecting_cell_count": 364,
+      "polygon_coverage_ratio": 1.0,
+      "state": "TX"
+    },
+    {
+      "boundary_area_ratio": 0.23896574412317978,
+      "chunk_ids": [
+        "0.1.6"
+      ],
+      "county": "Waller",
+      "county_area_m2": 1371817355.0508153,
+      "coverage_status": "FULL",
+      "cross_chunk": false,
+      "downloaded_overlap_area_m2": 1371817355.0508122,
+      "fips_code": "48473",
+      "intersecting_cell_count": 202,
+      "polygon_coverage_ratio": 0.9999999999999978,
+      "state": "TX"
+    }
+  ]
+}

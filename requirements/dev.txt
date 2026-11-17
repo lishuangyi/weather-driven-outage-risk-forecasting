@@ -1,0 +1,4 @@
+# Development tools (tests, lint); on top of requirements/cpu.txt
+pytest==9.0.3
+ruff==0.17.5
+scikit-learn==1.9.0

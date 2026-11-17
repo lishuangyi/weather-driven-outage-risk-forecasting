@@ -1,0 +1,9 @@
+# Extra dependencies of the data pipeline (on top of requirements-lock*.txt; not needed by infer.py).
+# Tested on Linux / Python 3.12.13. The HRRR-Zarr decoder also loads the system library libblosc (apt install libblosc1).
+boto3==1.43.79
+botocore==1.43.79
+eccodes==2.48.0
+pyarrow==25.0.1
+pyogrio==0.13.0
+pyproj==3.7.2
+shapely==2.1.2

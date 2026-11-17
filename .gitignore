@@ -1,0 +1,20 @@
+# downloaded or generated
+/models/
+/data/
+/out/
+*.duckdb
+*.duckdb.wal
+data_pipeline/work/
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+# os / editors
+.DS_Store
+*:Zone.Identifier
+.vscode/
+.idea/
