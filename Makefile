@@ -20,4 +20,4 @@ demo:             ## one-week demo with summary page (out/demo/summary.html)
 test:
 	$(PY) -m pytest -q
 lint:
-	$(PY) -m ruff check src tests scripts
+	$(PY) -m ruff check src tests scripts docs/diagrams
