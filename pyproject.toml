@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12,<3.13"
 authors = [{ name = "lishuangyi" }]
-dependencies = ["numpy==2.5.2", "polars==1.43.2", "torch==2.11.0", "xgboost==3.4.1"]
+dependencies = ["duckdb==2.0.0", "numpy==2.5.2", "polars==1.43.2", "torch==2.11.0", "xgboost==3.4.1"]
 
 [project.optional-dependencies]
 dev = ["pytest==9.0.3", "ruff==0.17.5", "scikit-learn==1.9.0"]

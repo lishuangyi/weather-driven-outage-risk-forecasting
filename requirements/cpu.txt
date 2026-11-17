@@ -1,6 +1,7 @@
 # Exact dependency closure, CPU-only build (Python 3.12, Linux x86-64). Verified by installing into an empty virtual
-# environment (pip check clean) and running the public sample. Runtime imports: numpy, polars, torch, xgboost.
+# environment (pip check clean) and running the public sample. Runtime imports: numpy, polars, torch, xgboost (duckdb: SQL warehouse only).
 --extra-index-url https://download.pytorch.org/whl/cpu
+duckdb==2.0.0
 filelock==3.32.4
 fsspec==2026.7.0
 Jinja2==3.1.6

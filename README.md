@@ -19,6 +19,10 @@ the storm, and the 28 June forecast follows the restoration, though it decays mo
   is missing.
 - **Reproducible inference.** 618,240 forecasts for June–August 2025 run in about 30 s on a GPU or 1 min on a CPU, and
   the output matches the frozen release byte for byte. Model files are checked against their SHA-256 before use.
+- **A SQL warehouse (DuckDB).** It is a second implementation of the data side in plain SQL, organised as bronze,
+  silver and gold layers. It covers point-in-time features (as-of joins on publication time), labels, data-quality
+  checks and the challenge metric. Tests check that it reproduces the 30 Python history features and the official
+  scores to within floating-point rounding (see [docs/SQL.md](docs/SQL.md)).
 - **An end-to-end data pipeline**, from public cloud archives (`s3://hrrrzarr`, `s3://noaa-mrms-pds`, Figshare) to
   county-level Parquet tables. HRRR forecasts are aggregated over exact county polygons.
 
@@ -30,8 +34,9 @@ cd weather-driven-outage-risk-forecasting
 make setup          # pip install -r requirements/cpu.txt -r requirements/dev.txt && pip install -e .
 make models data    # frozen models (39 MB) + June–August 2025 inputs (75 MB), SHA-256 verified
 make predict        # out/predictions.csv: 618,240 rows
+make warehouse      # out/warehouse.duckdb: features, labels, quality checks, scores by county/lead/month (≈5 s)
 make demo           # out/demo/summary.html: one week in Harris County with scores and charts
-make test           # end-to-end, no-lookahead, input-validation and metric tests (mini input in tests/fixtures)
+make test           # end-to-end, no-lookahead, SQL-vs-Python parity, input-validation and metric tests
 ```
 
 The downloads come from this repository's [GitHub release](artifacts/release_v1.0.0.json) through the GitHub CLI if it
@@ -79,6 +84,10 @@ mainly on how many outage events a period contains, and Task A is weakest in qui
 | Outage records 3 min late, weather runs 4 h late | 49.77 | 72.97 |
 | No outage history at all | 33.04 | 24.72 |
 
+The SQL analysis queries break this down further. The model beats persistence in every county, with the largest
+gain in Wayne County. Task A is over-confident in its top risk bin (predicted 0.98, observed 0.64), and the small
+Los Angeles events are mostly missed ([docs/SQL.md](docs/SQL.md#analysis-queries-sqlanalysis)).
+
 Recent outage history is the most important input. In a three-day test, seven days of history gave the same scores as
 the full history.
 
@@ -96,14 +105,15 @@ MRMS radar      ─┘   (published ≤ T only)  ├─ radar: reflectivity expo
 | A | GRU (0.4), joint feature tree (0.4), Q95 tail model (0.2) | no radar → radar-free tree; no weather → weather-free tree; no history → history-free tree |
 | B | joint Tweedie tree (0.5), GRU (0.5) | no radar → five-family tree system; no history → monthly climatology |
 
-See [docs/MODEL.md](docs/MODEL.md) for the model details, [docs/DATA.md](docs/DATA.md) for sources, licences and
+See [docs/MODEL.md](docs/MODEL.md) for the model details, [docs/SQL.md](docs/SQL.md) for the SQL warehouse, [docs/DATA.md](docs/DATA.md) for sources, licences and
 availability rules, and [docs/DEMO.md](docs/DEMO.md) for the demo tool.
 
 ## Repository layout
 
 | Path | Content |
 |---|---|
-| `src/outage_forecast/` | inference package: input validation, point-in-time features, model members, blending, output |
+| `src/outage_forecast/` | inference package: input validation, point-in-time features, model members, blending, output; `warehouse.py` runs the SQL layers |
+| `sql/` | DuckDB warehouse: `bronze/`, `silver/`, `gold/` layers and `analysis/` queries ([docs/SQL.md](docs/SQL.md)) |
 | `configs/inference.json` | the single runtime configuration: feature schemas, member weights, fallback routes, model SHA-256 |
 | `data_pipeline/` | builds the input tables from public archives (HRRR, MRMS, EAGLE-I, Census polygons) |
 | `demo/` | demo runner, local scorer, request selector, charts; `notebooks/demo.ipynb` is the notebook front end |

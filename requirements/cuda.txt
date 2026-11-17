@@ -1,10 +1,11 @@
 # Exact dependency closure, CUDA 12.8 build (Python 3.12, Linux x86-64). Verified by pip's resolver (dry run in an empty
-# virtual environment resolves exactly this set). Runtime imports: numpy, polars, torch, xgboost.
+# virtual environment resolves exactly this set). Runtime imports: numpy, polars, torch, xgboost (duckdb: SQL warehouse only).
 # CPU-only machine: requirements/cpu.txt.
 --extra-index-url https://download.pytorch.org/whl/cu128
 cuda-bindings==12.9.7
 cuda-pathfinder==1.7.0
 cuda-toolkit==12.8.1
+duckdb==2.0.0
 filelock==3.32.4
 fsspec==2026.7.0
 Jinja2==3.1.6
