@@ -109,21 +109,34 @@ the full history.
 
 ## How it works
 
-```
-EAGLE-I outages ─┐                         ┌─ outage history: lags, rolling stats, event state ─┐
-HRRR forecasts  ─┼─ as-of filter at T ─────┼─ weather: county mean/std/max/p95 of 14 variables ─┼─► XGBoost (Tweedie) ─┐
-MRMS radar      ─┘   (published ≤ T only)  ├─ radar: reflectivity exposure in the last 24 h ────┘                     ├─► blend ─► x̂ ─► risk per architecture
-                                           └─ 7-day 15-min sequence (240 × 6) ───────────────► GRU ────────────────┘
-```
+Every forecast starts from the same core: two predictors, each reading only what was published by the issue time.
+Colours mark the data source (outage records, weather forecasts, radar) and the kind of model.
 
-| Task | Members (weight) | Fallbacks |
-|---|---|---|
-| A | GRU (0.4), joint feature tree (0.4), Q95 tail model (0.2) | no radar → radar-free tree; no weather → weather-free tree; no history → history-free tree |
-| B | joint Tweedie tree (0.5), GRU (0.5) | no radar → five-family tree system; no history → monthly climatology |
+![Shared core: GRU history network and joint feature tree](docs/assets/diagram-shared-core.png)
 
-See [docs/MODEL.md](docs/MODEL.md) for the model details, [docs/SQL.md](docs/SQL.md) for the SQL warehouse,
-[docs/TRAINING.md](docs/TRAINING.md) for training from scratch, [docs/DATA.md](docs/DATA.md) for sources, licences and
-availability rules, and [docs/DEMO.md](docs/DEMO.md) for the demo tool.
+**Task A** (48 h, hourly, issued at 00 UTC) blends three members:
+
+![Task A: GRU, joint feature tree and Q95 tail member](docs/assets/diagram-task-a.png)
+
+**Task B** (6 h, every 5 minutes, issued four times a day) blends two members on the 15-minute grid of the data, then
+holds each value over its interval:
+
+![Task B: joint Tweedie tree and GRU on a 15-minute grid](docs/assets/diagram-task-b.png)
+
+The diagrams are generated from `docs/diagrams/build_diagrams.py` (HTML sources next to it).
+
+## Documentation
+
+| Page | Content |
+|---|---|
+| [Model card](docs/MODEL_CARD.md) | intended use, data, performance, limitations |
+| [Results](docs/RESULTS.md) | all scores: by window, lead, county, architecture and month, plus robustness |
+| [Model](docs/MODEL.md) | features, members, fallbacks, design notes |
+| [Temporal correctness](docs/TEMPORAL_CORRECTNESS.md) | the issue-time rule, replay assumptions, the tests that enforce it |
+| [Missing inputs](docs/MISSING_INPUTS.md) | fallback routes and what each missing input costs |
+| [SQL warehouse](docs/SQL.md) | DuckDB bronze → silver → gold, parity with Python, analysis queries |
+| [Training](docs/TRAINING.md) | reference model trained from scratch, protocol and results |
+| [Data](docs/DATA.md) · [Demo](docs/DEMO.md) | input tables, sources and licences; the demo tool |
 
 ## Repository layout
 

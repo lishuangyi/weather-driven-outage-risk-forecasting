@@ -4,6 +4,8 @@ All models were fitted on outage labels of 2022–2024 (40 counties: the 5 forec
 loaded read-only, and nothing is refitted at inference. Every file is listed with its SHA-256 in
 `configs/inference.json`, and the run stops if a file is missing or changed.
 
+![Shared core](assets/diagram-shared-core.png)
+
 ## Features (all computed as of the issue time T)
 
 | Group | Columns | Source |
@@ -17,6 +19,10 @@ loaded read-only, and nothing is refitted at inference. Every file is listed wit
 Feature code: `src/outage_forecast/features/` (`history.py`, `weather.py`, `radar.py`, `base.py`).
 
 ## Members
+
+![Task A](assets/diagram-task-a.png)
+
+![Task B](assets/diagram-task-b.png)
 
 | File | Model | Role |
 |---|---|---|

@@ -24,7 +24,7 @@ jobs:
           python -m pip install -r requirements/cpu.txt -r requirements/dev.txt
           python -m pip install -e . --no-deps
       - name: Lint
-        run: python -m ruff check src tests scripts
+        run: python -m ruff check src tests scripts docs/diagrams
       - name: Cache models
         uses: actions/cache@v4
         with:

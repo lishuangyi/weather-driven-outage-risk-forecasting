@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task A: three members for 48-hour forecasts</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif; background: #ffffff; color: #0f172a; padding: 3rem 2rem; display: flex; justify-content: center; }
+.frame { max-width: 1000px; width: 100%; }
+.eyebrow { font-family: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #475569; margin-bottom: 0.5rem; }
+h1 { font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
+.diagram-container { width: 100%; overflow-x: auto; }
+svg { width: 100%; min-width: 960px; display: block; }
+@media print { .diagram-container { overflow-x: visible; } svg { min-width: 0; } }
+</style>
+</head>
+<body>
+<div class="frame">
+<p class="eyebrow">Model · Task A, 48 h hourly</p>
+<h1>Task A: three members for 48-hour forecasts</h1>
+<div class="diagram-container">
+<svg viewBox="0 0 960 492" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="diagram-task-a-title diagram-task-a-desc">
+<title id="diagram-task-a-title">Task A: three members for 48-hour forecasts</title>
+<desc id="diagram-task-a-desc">Task A blends a GRU history network, a joint feature tree and a Q95 tail member with fixed weights 0.4, 0.4 and 0.2 into 48 hourly outage forecasts per county, each mapped to four architecture risks.</desc>
+<defs><marker id="diagram-task-a-arrow-outage" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4338ca"/></marker><marker id="diagram-task-a-arrow-weather" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#0e7490"/></marker><marker id="diagram-task-a-arrow-radar" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#047857"/></marker><marker id="diagram-task-a-arrow-base" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#475569"/></marker><marker id="diagram-task-a-arrow-nn" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#6d28d9"/></marker><marker id="diagram-task-a-arrow-tree" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#c2410c"/></marker><marker id="diagram-task-a-arrow-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#be123c"/></marker><marker id="diagram-task-a-arrow-out" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#0f172a"/></marker></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<path d="M 232,80 L 328,80" fill="none" stroke="#4338ca" stroke-width="1.4" marker-end="url(#diagram-task-a-arrow-outage)"/>
+<path d="M 232,164 L 246,164 Q 252,164 252,170 L 252,170 Q 252,176 258,176 L 328,176" fill="none" stroke="#4338ca" stroke-width="1.4" marker-end="url(#diagram-task-a-arrow-outage)"/>
+<path d="M 232,228 L 256,228 Q 264,228 264,220 L 264,214 Q 264,206 272,206 L 328,206" fill="none" stroke="#047857" stroke-width="1.4" marker-end="url(#diagram-task-a-arrow-radar)"/>
+<path d="M 232,292 L 268,292 Q 276,292 276,284 L 276,244 Q 276,236 284,236 L 328,236" fill="none" stroke="#0e7490" stroke-width="1.4" marker-end="url(#diagram-task-a-arrow-weather)"/>
+<path d="M 232,308 L 328,308" fill="none" stroke="#0e7490" stroke-width="1.4" marker-end="url(#diagram-task-a-arrow-weather)"/>
+<path d="M 600,80 L 680,80 Q 688,80 688,88 L 688,174" fill="none" stroke="#6d28d9" stroke-width="1.4" marker-end="url(#diagram-task-a-arrow-nn)"/>
+<path d="M 600,206 L 662,206" fill="none" stroke="#c2410c" stroke-width="1.4" marker-end="url(#diagram-task-a-arrow-tree)"/>
+<path d="M 600,332 L 680,332 Q 688,332 688,324 L 688,232" fill="none" stroke="#be123c" stroke-width="1.4" marker-end="url(#diagram-task-a-arrow-tail)"/>
+<path d="M 714,206 L 760,206" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#diagram-task-a-arrow-out)"/>
+<rect x="696" y="112" width="40" height="16" rx="2" fill="#ffffff"/>
+<text x="716" y="123.24" fill="#6d28d9" font-size="9" font-weight="500" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle" letter-spacing="0.06em">× 0.4</text>
+<rect x="610" y="184" width="40" height="16" rx="2" fill="#ffffff"/>
+<text x="630" y="195.24" fill="#c2410c" font-size="9" font-weight="500" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle" letter-spacing="0.06em">× 0.4</text>
+<rect x="696" y="284" width="40" height="16" rx="2" fill="#ffffff"/>
+<text x="716" y="295.24" fill="#be123c" font-size="9" font-weight="500" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle" letter-spacing="0.06em">× 0.2</text>
+<rect x="24" y="56" width="208" height="48" rx="6" fill="#ffffff"/>
+<rect x="24" y="56" width="208" height="48" rx="6" fill="#eef2ff" stroke="#6366f1" stroke-width="1.2"/>
+<text x="128.0" y="77.5" fill="#4338ca" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">7-day outage sequence</text>
+<text x="128.0" y="92.5" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">+ event state, as of T</text>
+<rect x="24" y="140" width="208" height="48" rx="6" fill="#ffffff"/>
+<rect x="24" y="140" width="208" height="48" rx="6" fill="#eef2ff" stroke="#6366f1" stroke-width="1.2"/>
+<text x="128.0" y="161.5" fill="#4338ca" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Tree event features</text>
+<text x="128.0" y="176.5" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">9 · peak, duration, recovery</text>
+<rect x="24" y="204" width="208" height="48" rx="6" fill="#ffffff"/>
+<rect x="24" y="204" width="208" height="48" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1.2"/>
+<text x="128.0" y="225.5" fill="#047857" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Radar exposure</text>
+<text x="128.0" y="240.5" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">20 · last 24 h before T</text>
+<rect x="24" y="276" width="208" height="48" rx="6" fill="#ffffff"/>
+<rect x="24" y="276" width="208" height="48" rx="6" fill="#ecfeff" stroke="#06b6d4" stroke-width="1.2"/>
+<text x="128.0" y="297.5" fill="#0e7490" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Two-run weather average</text>
+<text x="128.0" y="312.5" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">12 · 00Z and previous 18Z run</text>
+<rect x="328" y="40" width="272" height="80" rx="6" fill="#ffffff"/>
+<rect x="328" y="40" width="272" height="80" rx="6" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.2"/>
+<rect x="338" y="48" width="42" height="12" rx="2" fill="#ffffff" stroke="#8b5cf6" stroke-width="0.8"/>
+<text x="359.0" y="57" fill="#6d28d9" font-size="7" font-weight="600" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">NETWORK</text>
+<text x="464.0" y="80.0" fill="#6d28d9" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">GRU history network</text>
+<text x="464.0" y="95.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">185 inputs + 7-day sequence</text>
+<text x="464.0" y="108.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">48 hourly leads at once</text>
+<rect x="328" y="148" width="272" height="116" rx="6" fill="#ffffff"/>
+<rect x="328" y="148" width="272" height="116" rx="6" fill="#fff7ed" stroke="#f97316" stroke-width="1.2"/>
+<rect x="338" y="156" width="42" height="12" rx="2" fill="#ffffff" stroke="#f97316" stroke-width="0.8"/>
+<text x="359.0" y="165" fill="#c2410c" font-size="7" font-weight="600" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">XGBOOST</text>
+<text x="464.0" y="198.5" fill="#c2410c" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Joint feature tree</text>
+<text x="464.0" y="213.5" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">XGBoost · Tweedie · 226 inputs</text>
+<text x="464.0" y="226.5" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">base + events + averages</text>
+<text x="464.0" y="239.5" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">+ radar exposure</text>
+<rect x="328" y="292" width="272" height="80" rx="6" fill="#ffffff"/>
+<rect x="328" y="292" width="272" height="80" rx="6" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.2"/>
+<rect x="338" y="300" width="54" height="12" rx="2" fill="#ffffff" stroke="#f43f5e" stroke-width="0.8"/>
+<text x="365.0" y="309" fill="#be123c" font-size="7" font-weight="600" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">CLASSIFIER</text>
+<text x="464.0" y="332.0" fill="#be123c" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Q95 tail member</text>
+<text x="464.0" y="347.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">P(x ≥ q95) mixes two levels</text>
+<text x="464.0" y="360.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">185 inputs</text>
+<circle cx="688" cy="206" r="26" fill="#0f172a"/>
+<text x="688" y="214" fill="#ffffff" font-size="22" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Σ</text>
+<rect x="760" y="164" width="176" height="84" rx="6" fill="#ffffff"/>
+<rect x="760" y="164" width="176" height="84" rx="6" fill="#f1f5f9" stroke="#334155" stroke-width="1.2"/>
+<text x="848.0" y="196.0" fill="#0f172a" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">48 hourly forecasts</text>
+<text x="848.0" y="211.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">x̂ per county, 00 UTC</text>
+<text x="848.0" y="224.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">→ 4 architecture risks</text>
+<text x="24" y="400" fill="#475569" font-size="11" font-weight="400" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">All members also read the 150 base columns (calendar, county, 30 outage-history features, HRRR statistics).</text>
+<text x="24" y="420" fill="#475569" font-size="11" font-weight="400" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Fallbacks, per county and issue: no radar → radar-free event tree · no weather → weather-free tree · no history → history-free tree.</text>
+<line x1="24" y1="440" x2="936" y2="440" stroke="rgba(15,23,42,0.12)" stroke-width="0.8"/>
+<text x="24" y="466" fill="#64748b" font-size="8" font-weight="600" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="start" letter-spacing="0.16em">LEGEND</text>
+<rect x="96" y="456" width="14" height="14" rx="3" fill="#eef2ff" stroke="#6366f1" stroke-width="1.2"/>
+<text x="116" y="467" fill="#4338ca" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Outage records</text>
+<rect x="220" y="456" width="14" height="14" rx="3" fill="#ecfeff" stroke="#06b6d4" stroke-width="1.2"/>
+<text x="240" y="467" fill="#0e7490" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Weather forecasts</text>
+<rect x="362" y="456" width="14" height="14" rx="3" fill="#ecfdf5" stroke="#10b981" stroke-width="1.2"/>
+<text x="382" y="467" fill="#047857" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Radar</text>
+<rect x="434" y="456" width="14" height="14" rx="3" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.2"/>
+<text x="454" y="467" fill="#6d28d9" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Neural network</text>
+<rect x="558" y="456" width="14" height="14" rx="3" fill="#fff7ed" stroke="#f97316" stroke-width="1.2"/>
+<text x="578" y="467" fill="#c2410c" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Boosted trees</text>
+<rect x="677" y="456" width="14" height="14" rx="3" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.2"/>
+<text x="697" y="467" fill="#be123c" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Tail classifier</text>
+<rect x="807" y="456" width="14" height="14" rx="3" fill="#f1f5f9" stroke="#334155" stroke-width="1.2"/>
+<text x="827" y="467" fill="#0f172a" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Blend and output</text>
+</svg>
+</div>
+</div>
+</body>
+</html>
