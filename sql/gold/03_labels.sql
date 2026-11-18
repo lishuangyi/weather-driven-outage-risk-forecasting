@@ -6,17 +6,21 @@
 --                    NaN (invalid, excluded from scoring) if any lies outside [0, 1].
 --   Task B target T: x at T when the series has a record at T (native 5-minute data),
 --                    otherwise the 15-minute value at floor(T / 15 min) (last value held within its interval).
+-- truth_published_s: when the revisions behind a label were published (the latest of them). A training split with a
+-- cut-off C keeps only labels with target_s < C AND truth_published_s < C, so a late correction published after C
+-- cannot reach the fit or the selection (outage_forecast.reference.labelled).
 
 -- grain: one row per (county, observation time)
 CREATE OR REPLACE TABLE gold.final_outages AS
-SELECT o.county, o.ts_s, o.customers_out / c.total_customers AS x
+SELECT o.county, o.ts_s, o.src_s, o.customers_out / c.total_customers AS x
 FROM silver.outage_versions o JOIN silver.customers c USING (county)
 QUALIFY row_number() OVER (PARTITION BY o.county, o.ts_s ORDER BY o.src_s DESC, o.row_id DESC) = 1;
 
 -- grain: one row per request
 CREATE OR REPLACE TABLE gold.labels AS
 WITH a AS (
-    SELECT r.row_id, x45.x AS x45, x30.x AS x30, x15.x AS x15, x0.x AS x0
+    SELECT r.row_id, x45.x AS x45, x30.x AS x30, x15.x AS x15, x0.x AS x0,
+           greatest(x45.src_s, x30.src_s, x15.src_s, x0.src_s) AS published_s
     FROM silver.requests r
     LEFT JOIN gold.final_outages x45 ON x45.county = r.county AND x45.ts_s = r.target_s - 2700
     LEFT JOIN gold.final_outages x30 ON x30.county = r.county AND x30.ts_s = r.target_s - 1800
@@ -26,7 +30,8 @@ WITH a AS (
 ),
 b AS (
     SELECT r.row_id, at_t.ts_s IS NOT NULL AS truth_at_t,
-           CASE WHEN at_t.ts_s IS NOT NULL THEN at_t.x ELSE floor15.x END AS truth
+           CASE WHEN at_t.ts_s IS NOT NULL THEN at_t.x ELSE floor15.x END AS truth,
+           CASE WHEN at_t.ts_s IS NOT NULL THEN at_t.src_s ELSE floor15.src_s END AS published_s
     FROM silver.requests r
     LEFT JOIN gold.final_outages at_t    ON at_t.county = r.county    AND at_t.ts_s = r.target_s
     LEFT JOIN gold.final_outages floor15 ON floor15.county = r.county AND floor15.ts_s = floor(r.target_s / 900) * 900
@@ -40,6 +45,7 @@ SELECT r.row_id, r.task, r.arch, r.county, r.issue_s, r.target_s, r.issue_time, 
                           THEN (a.x45 + a.x30 + a.x15 + a.x0) / 4
                      ELSE 'NaN'::DOUBLE END
             ELSE b.truth END                       AS truth_x,
+       CASE WHEN r.task = 'A' THEN a.published_s ELSE b.published_s END AS truth_published_s,
        b.truth_at_t
 FROM silver.requests r
 LEFT JOIN a USING (row_id)

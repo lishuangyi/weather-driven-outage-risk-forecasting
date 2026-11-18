@@ -87,8 +87,14 @@ for the delay experiment.
 
 ## 5. Reference model trained from scratch
 
-The v1 results of the reference trainer are withdrawn. A data-loading bug turned missing labels into zeros during
-training and selection; see [TRAINING.md](TRAINING.md). They will be replaced after the fix and re-run.
+| Evaluation | Reference | Persistence | Frozen ensemble |
+|---|---:|---:|---:|
+| 2024 (chronological test), A / B | 55.01 / 72.54 | 49.75 / 69.56 | in its training data |
+| 2025 full year (retrospective) | 44.30 / 68.87 | 43.92 / 66.33 | 54.88 / 73.44 |
+
+These are v2 results, after a fix on 2026-11-18. The v1 results were withdrawn because missing labels had been read as
+zeros. [TRAINING.md](TRAINING.md) has the protocol, the selection table, the monthly results and the revision
+history.
 
 ## 6. Calibration and events
 

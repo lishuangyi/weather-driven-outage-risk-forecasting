@@ -3,7 +3,7 @@
 -- (outage_forecast.reference) and, for new inputs, its prediction input.
 CREATE OR REPLACE TABLE gold.examples AS
 WITH labels AS (
-    SELECT task, county, issue_s, target_s, any_value(truth_x) AS truth_x
+    SELECT task, county, issue_s, target_s, any_value(truth_x) AS truth_x, max(truth_published_s) AS truth_published_s
     FROM gold.labels GROUP BY ALL
 )
 SELECT k.task, k.county, k.issue_s, k.target_s,
@@ -18,7 +18,8 @@ SELECT k.task, k.county, k.issue_s, k.target_s,
        h.* EXCLUDE (task, county, issue_s, issue_time),
        w.* EXCLUDE (county, issue_s, valid_s),
        r.* EXCLUDE (county, issue_s),
-       l.truth_x
+       l.truth_x,
+       l.truth_published_s                                              -- label metadata, never a feature
 FROM gold.forecast_keys k
 JOIN silver.customers c USING (county)
 JOIN ref.counties rc USING (county)

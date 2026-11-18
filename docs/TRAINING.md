@@ -1,15 +1,8 @@
 # Reference model: training from scratch
 
-> **v1 results withdrawn (2026-11-18).** A review found a data-loading bug. DuckDB returns NULL values as masked numpy
-> arrays, and the conversion to polars dropped the mask, so missing labels and missing features became zeros. In the
-> 2024 examples, 76,656 of the 614,880 labels were missing and were trained on as "no outage". The selection set of
-> 2023 also lacked the cut-off at 1 January 2024. The scores below are kept only as a record and will be replaced
-> after the fix and a full re-run. The frozen ensemble is not affected: its scores come from the SQL metric, which
-> reads NULLs correctly.
-
 The frozen ensemble (`models/`, see [MODEL.md](MODEL.md)) was built with the original experiment code. That code
 spans many scripts and caches and is not part of this repository. `outage_forecast.reference` is a clean
-replacement that a reader can run end to end: one feature table, one fixed recipe and a chronological protocol.
+replacement that you can run end to end: one feature table, one fixed recipe and a chronological protocol.
 
 ```bash
 python scripts/download_artifacts.py training full-2025     # 2022–2025 full-year inputs (≈1.1 GB)
@@ -17,14 +10,14 @@ make train                                                  # ≈3 min on a GPU;
 python -m outage_forecast.reference predict --input-dir data/inputs/input_2025 --output out/reference.csv
 ```
 
-The saved models are also in release v1.1.0 (`python scripts/download_artifacts.py reference`). The full training
-report, including the selection table, scores and feature importance, is
-[`artifacts/reference/reference_v1.json`](../artifacts/reference/reference_v1.json).
+The saved models are in release v1.2.0 (`python scripts/download_artifacts.py reference`). The full training report,
+with the selection table, scores and feature importance, is
+[`artifacts/reference/reference_v2.json`](../artifacts/reference/reference_v2.json).
 
 ## Data
 
 The training set is the warehouse table `gold.examples` ([SQL.md](SQL.md)). It has one row per (task, county, issue,
-target) and 79 features, all computed as of the issue time, plus the label:
+target), 79 features computed as of the issue time, and the label:
 
 | Group | Features |
 |---|---|
@@ -33,9 +26,12 @@ target) and 79 features, all computed as of the issue time, plus the label:
 | weather | mean and max of 14 HRRR variables at the end of the target hour, from the latest run visible at T; age of that run |
 | radar | maximum reflectivity exposure over the last 1 h / 6 h / 24 h, mean 35 dBZ coverage over 24 h |
 | label | `truth_x` from `gold.labels` (Task A: mean of 4 quarter-hours; Task B: value at T or held 15-minute value) |
+| label metadata | `truth_published_s`: when the revisions behind the label were published; used for purging, never a feature |
 
-Per year there are 87,600 Task A examples (48 leads) and 525,600 Task B examples (72 leads). Only the five forecast
-counties have outage records in these inputs. The frozen ensemble was also trained on 35 neighbouring counties.
+Each year has 87,600 Task A examples (48 leads) and 525,600 Task B examples (72 leads). Between 12 and 17 % have no
+valid label, because one of the needed observations is missing or blank, and are left out: 73–75 thousand labelled Task A
+examples and 450–463 thousand Task B examples per year. Only the five forecast counties have outage records in these
+inputs; the frozen ensemble was also trained on 35 neighbouring counties.
 
 ## Recipe and protocol
 
@@ -46,59 +42,76 @@ subsampling 0.8 and seed 42. These values are fixed and were not tuned. Two vari
 - **anchored**: the same, with log(persistence forecast) as base margin. The trees then learn a multiplicative change
   to "the latest observation stays", which is the natural null model for outages.
 
-| Stage | Fit | Evaluate | Purpose |
-|---|---|---|---|
-| 1. selection | 2022 | 2023 | choose the variant and number of rounds per task, **by the challenge score** |
-| 2. test | 2022–2023 | 2024 | first and only look at 2024 |
-| 3. final | 2022–2024 | 2025 | the saved model; 2025 is never used for fitting or choosing |
+| Stage | Fit | Evaluate | Cut-off of the fit / selection set | Purpose |
+|---|---|---|---|---|
+| 1. selection | 2022 | 2023 | 2023-01-01 / 2024-01-01 | choose the variant and number of rounds per task, **by the challenge score** |
+| 2. test | 2022–2023 | 2024 | 2024-01-01 | first look at 2024 |
+| 3. final | 2022–2024 | 2025 | 2025-01-01 | the saved model; 2025 is a retrospective evaluation |
 
-At each boundary, training examples whose target lies in the evaluation period are dropped (purging). Every score
-below comes from the SQL metric (`sql/scoring`), with persistence scored on the same cases.
+A set with cut-off C keeps only examples whose target **and** label publication time are before C. A target near the
+end of a year, or a correction published later, therefore cannot reach the fit or the selection.
+`tests/test_reference.py` checks this with a late correction, a blank revision and boundary-crossing targets. All
+scores below come from the SQL metric (`sql/scoring`), with persistence scored on the same cases as each model.
 
-### Selection on 2023 (challenge score; persistence: A 50.85, B 72.32)
+### Selection on 2023 (challenge score; persistence: A 51.78, B 74.10)
 
 | Rounds | 25 | 50 | 100 | 200 | 400 | 800 | 1200 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| A plain | 56.29 | 57.31 | **57.62** | 57.14 | 56.63 | 55.97 | 55.58 |
-| A anchored | 55.63 | 57.08 | 57.13 | 56.77 | 56.71 | 56.39 | 56.11 |
-| B plain | 74.68 | 75.65 | 75.98 | 75.91 | 75.92 | 75.70 | 75.54 |
-| B anchored | 75.28 | 76.31 | 76.72 | **76.75** | 76.74 | 76.50 | 76.34 |
+| A plain | 56.48 | 57.46 | 57.64 | 57.59 | 57.21 | 56.86 | 56.62 |
+| A anchored | 56.16 | **57.99** | 57.81 | 57.43 | 56.99 | 56.71 | 56.50 |
+| B plain | 75.29 | 76.19 | 76.17 | 76.09 | 76.02 | 75.76 | 75.51 |
+| B anchored | 76.13 | **76.76** | 76.49 | 76.50 | 76.50 | 76.34 | 76.15 |
 
-Chosen: Task A plain, 100 rounds; Task B anchored, 200 rounds. Long training hurts both tasks, so the optimum
-is a small model.
+The selection chose the anchored variant with 50 rounds for both tasks. Longer training hurts, so the best model is a
+small correction to persistence.
 
 ## Results
 
 | Evaluation | Reference | Persistence | Frozen ensemble |
 |---|---:|---:|---:|
-| 2024 test, Task A / B | **53.43 / 73.04** | 49.75 / 69.56 | (trained on 2024) |
-| 2025 full year | 42.60 / 71.12 | 43.92 / 66.33 | **54.88 / 73.44** |
-| 2025 June–August | 41.29 / 71.39 | 38.69 / 65.88 | **54.45 / 75.13** |
+| 2024 test, Task A / B | **55.01 / 72.54** | 49.75 / 69.56 | (trained on 2024) |
+| 2025 full year | 44.30 / 68.87 | 43.92 / 66.33 | **54.88 / 73.44** |
+| 2025 June–August | 42.62 / 69.19 | 38.69 / 65.88 | **54.45 / 75.13** |
 
-- **Task B.** The simple model gets most of the way: +4.8 over persistence on 2025, and 2.3 points below the frozen
-  ensemble. It beats persistence in 11 of 12 months of 2025 (May −0.1).
-- **Task A.** It beats persistence in the 2024 test and in 9 of 12 months of 2025 (up to +10.8). It loses heavily
-  in January (−12.5) and February (−26.0) 2025, when the Los Angeles wildfire outages lasted for days (up to 46 % of
-  customers). A held observation is nearly perfect in such an event, while a tree that forecasts each hour
-  separately pulls back towards typical values.
-- **The gap to the frozen ensemble (Task A +12.3 on 2025)** measures what its extra parts add: event-duration
-  features, a GRU over the 7-day sequence, a tail model for large outages, and 8 times more training counties. The
-  January–February failure mode is exactly what the event features and the GRU state address.
+- **2024 test.** The reference model beats persistence by 5.3 (A) and 3.0 (B).
+- **2025, Task B.** +2.5 over persistence. It beats persistence in 10 of 12 months; January (−0.2) and May (−0.5) are
+  roughly level. It is 4.6 points below the frozen ensemble.
+- **2025, Task A.** +0.4 over persistence for the year. It wins 10 of 12 months by +0.7 to +9.4, and loses January
+  (−8.8) and February (−15.6). Those are the months of the multi-day Los Angeles wildfire outages, which reached up to
+  46 % of customers. During such an event a held observation is nearly perfect, while a model that forecasts each
+  hour separately drifts back towards typical values.
+- **The gap to the frozen ensemble** is 10.6 (A) and 4.6 (B) on 2025. It measures what the ensemble's extra parts add:
+  event-duration features, a GRU over the 7-day sequence, a tail model for large outages, and eight times more training
+  counties. The January–February failure is exactly the case the event features and the GRU state are built for.
 
-Most important features (total gain): for Task A the rolling maxima of the outage share over 3–24 h, then radar exposure
-and pressure/snow forecasts; for Task B the latest observation and the 15–30 min lags, then gusts, pressure and
-precipitation.
+Most important features (total gain): for Task A the last hour of outage history (rolling max and mean, latest value,
+15–30 min lags), then snow, pressure and radar; for Task B the latest value and recent rolling means, then
+precipitation, gusts and pressure.
 
-## What was changed after looking at 2025
+## Revision history
 
-The first version of the trainer chose the number of rounds by early stopping on the Tweedie log-likelihood (59 / 95
-rounds) and had only the plain variant. On 2025 it scored A 41.97 and B 70.48. I then changed the selection to the
-challenge score and added the anchored variant. The choice is still made only on 2023 validation, but the change was
-made after seeing 2025, so 2025 is not perfectly untouched for this recipe. The 2024 test result predates the
-change. Training on a GPU is reproducible with the fixed seed; CPU and GPU runs differ slightly.
+- **v1 (2026-11-17), withdrawn.** It had two errors:
+  - **NULL read as zero.** DuckDB returns a column with NULLs as a masked numpy array. Building the polars frame
+    dropped the mask, so every missing label and missing feature became 0. In 2024, 76,656 of 614,880 labels were
+    missing and were trained on as "no outage".
+  - **No cut-off for selection.** The 2023 selection set had no cut-off at 2024-01-01.
+
+  v1 reported 2024 A 53.43 / B 73.04 and 2025 A 42.60 / B 71.12.
+- **v2 (2026-11-18), current.** NULLs are kept (`reference.fetch`). Every fit and selection set is cut off by target
+  and label publication time. Persistence is scored separately for each predictions file. After the re-run:
+  - Task A improved in both test years (2024 +1.6, 2025 +1.7).
+  - Task B dropped: −0.5 on 2024 and −2.3 on 2025.
+
+  The numbers are reported as they came out; nothing was re-tuned.
+- **After seeing 2025.** The selection originally used early stopping on the Tweedie log-likelihood with the plain
+  variant only (2025: A 41.97, B 70.48). After seeing 2025 it was changed to the challenge score with two variants. The
+  choice is still made on 2023 alone, but 2025 is therefore not untouched for this recipe and is reported as a
+  retrospective evaluation.
+
+GPU training is reproducible with the fixed seed. CPU and GPU runs differ slightly.
 
 ## Possible next steps
 
-- Event-state features in SQL (duration of the current outage, time since peak) for the multi-day events.
+- Event-state features in SQL (duration of the current outage, time since its peak) for multi-day events.
 - Training on the 35 neighbouring counties as well. This needs their outage records in the inputs.
 - Calibration of the risk (see `sql/analysis/reliability.sql`).

@@ -12,7 +12,8 @@ chronological protocol in which every number is computed on data the model has n
                  persistence forecast as base margin (log link), so the trees learn a multiplicative change to it
   2. test        fit 2022-2023 with those rounds, score 2024 -> test score (2024 untouched until here)
   3. final       fit 2022-2024 with those rounds, score 2025 -> the saved model; 2025 was never used by this recipe
-Purging: training examples whose target lies in or after the evaluation period are dropped.
+Purging: every fit or selection set has a cut-off C (1 January of the next period); it keeps only examples whose target
+AND whose label publication time lie before C, so neither a target nor a late correction can cross the boundary.
 Scores use the warehouse metric (sql/scoring), next to the persistence baseline and, when its predictions file is
 given, the frozen ensemble.
 """
@@ -34,6 +35,7 @@ from .warehouse import build, run_layer, source
 
 KEYS = ['task', 'county', 'issue_s', 'target_s']
 LABEL = 'truth_x'
+META = ['truth_published_s']     # label metadata: used for purging, never a feature
 PARAMS = {'objective': 'reg:tweedie', 'tweedie_variance_power': 1.3, 'eval_metric': 'tweedie-nloglik@1.3',
           'eta': 0.05, 'max_depth': 7, 'min_child_weight': 10, 'subsample': 0.8, 'colsample_bytree': 0.8,
           'lambda': 1.0, 'tree_method': 'hist', 'seed': 42}
@@ -51,8 +53,20 @@ def year_start(year: int) -> float:
 
 
 def fetch(con, query: str) -> pl.DataFrame:
-    """Query result as polars (numpy transfer, no pyarrow)."""
-    return pl.DataFrame(con.execute(query).fetchnumpy())
+    """Query result as polars via numpy (no pyarrow), keeping SQL NULL as null.
+
+    DuckDB returns a column with NULLs as a numpy masked array; building a polars frame from it directly drops the
+    mask and turns NULL into the fill value (0.0). Missing labels then look like "no outage", so the mask is applied
+    explicitly here.
+    """
+    columns = []
+    for name, values in con.execute(query).fetchnumpy().items():
+        mask = np.ma.getmaskarray(values) if isinstance(values, np.ma.MaskedArray) else None
+        series = pl.Series(name, np.ma.getdata(values))
+        if mask is not None and mask.any():
+            series = pl.select(pl.when(pl.Series(mask)).then(None).otherwise(series).alias(name)).to_series()
+        columns.append(series)
+    return pl.DataFrame(columns)
 
 
 def examples(input_dir: Path) -> pl.DataFrame:
@@ -63,7 +77,7 @@ def examples(input_dir: Path) -> pl.DataFrame:
 
 
 def feature_names(frame: pl.DataFrame) -> list[str]:
-    return [c for c in frame.columns if c not in KEYS + [LABEL]]
+    return [c for c in frame.columns if c not in KEYS + [LABEL] + META]
 
 
 def matrix(frame: pl.DataFrame, features: list[str]) -> np.ndarray:
@@ -73,9 +87,12 @@ def matrix(frame: pl.DataFrame, features: list[str]) -> np.ndarray:
 
 
 def labelled(frame: pl.DataFrame, before: float | None = None) -> pl.DataFrame:
-    """Rows with a valid label; with `before`, only targets before that time (purging at the period boundary)."""
+    """Rows with a valid label. With a cut-off `before`, only rows whose target and whose label publication time are
+    both earlier (purging at the period boundary)."""
     out = frame.filter(pl.col(LABEL).is_not_null() & pl.col(LABEL).is_finite() & pl.col(LABEL).is_between(0, 1))
-    return out.filter(pl.col('target_s') < before) if before is not None else out
+    if before is None:
+        return out
+    return out.filter((pl.col('target_s') < before) & (pl.col('truth_published_s') < before))
 
 
 def anchor(frame: pl.DataFrame) -> np.ndarray:
@@ -139,7 +156,7 @@ def _q(path: Path) -> str:
 
 
 def score(input_dir: Path, predictions: dict[str, Path], window: tuple[str, str] | None = None) -> dict:
-    """Pooled scores of each named predictions file (and of persistence) with the warehouse metric."""
+    """Pooled scores of each named predictions file, each next to persistence scored on that file's cases."""
     out = {}
     for name, path in predictions.items():
         con = build(input_dir)
@@ -151,7 +168,7 @@ def score(input_dir: Path, predictions: dict[str, Path], window: tuple[str, str]
         rows = con.execute('SELECT model, task_a, task_b FROM gold.scoreboard').fetchall()
         con.close()
         for model, a, b in rows:
-            out[name if model == 'model' else 'persistence'] = {'task_a': round(a, 2), 'task_b': round(b, 2)}
+            out.setdefault(name, {})[model] = {'task_a': round(a, 2), 'task_b': round(b, 2)}
     return out
 
 
@@ -167,7 +184,7 @@ def train(device: str, frozen_2025: Path | None, workdir: Path) -> dict:
     # 1. selection: fit 2022, challenge score on 2023 for each variant and number of rounds
     for task in ('A', 'B'):
         train_rows = labelled(data[2022].filter(pl.col('task') == task), before=year_start(2023))
-        valid_rows = labelled(data[2023].filter(pl.col('task') == task))
+        valid_rows = labelled(data[2023].filter(pl.col('task') == task), before=year_start(2024))
         truth = valid_rows[LABEL].to_numpy()
         table = {'persistence': round(official_score(truth, np.nan_to_num(valid_rows['hist_latest_x'].to_numpy())), 2)}
         for variant in VARIANTS:

@@ -76,11 +76,13 @@ holds the latest observation and is scored on the same cases.
 | Frozen ensemble | 2022–2024 | training | — | — |
 | Frozen ensemble | 2025-06 to 2025-08 | member and weight selection | 54.45 / 38.69 | 75.13 / 65.88 |
 | Frozen ensemble | rest of 2025 (9 months) | retrospective, not used for selection¹ | 55.00 / 46.92 | 72.75 / 66.59 |
-| Reference trainer | 2022 fit, 2023 select, 2024 test, 2025 retrospective | from scratch, see [TRAINING.md](docs/TRAINING.md) | re-run pending² | re-run pending² |
+| Reference trainer² | 2024 | chronological test (fit 2022–23, selection on 2023) | 55.01 / 49.75 | 72.54 / 69.56 |
+| Reference trainer² | 2025, full year | retrospective (fit 2022–24) | 44.30 / 43.92 | 68.87 / 66.33 |
 
 ¹ January–May 2025 informed one decision: we rejected a fallback-routing change because of its January–May score.
-² The published v1 numbers were affected by a data-loading bug (missing labels read as zeros). The trainer is being
-fixed and re-run.
+² One XGBoost model per task, trained from scratch on the SQL training table ([TRAINING.md](docs/TRAINING.md)). It
+loses to persistence on Task A in January–February 2025, during the multi-day Los Angeles wildfire outages. The
+frozen ensemble's event features and GRU are built for exactly such events.
 
 Scores come from the full-year 2025 inputs, with windows defined by UTC issue time. On the June–August package used by
 `make predict`, truth ends on 31 August, and the same forecasts score 54.52 / 38.82 and 75.13 / 65.88. All
