@@ -31,7 +31,7 @@ import xgboost as xgb
 
 from .config import PACKAGE_ROOT, Config
 from .metrics import task_score
-from .warehouse import build, run_layer, source
+from .warehouse import build
 
 KEYS = ['task', 'county', 'issue_s', 'target_s']
 LABEL = 'truth_x'
@@ -157,18 +157,15 @@ def _q(path: Path) -> str:
 
 def score(input_dir: Path, predictions: dict[str, Path], window: tuple[str, str] | None = None) -> dict:
     """Pooled scores of each named predictions file, each next to persistence scored on that file's cases."""
-    out = {}
+    out, cohorts = {}, set()
     for name, path in predictions.items():
-        con = build(input_dir)
-        expr = source(Path(path).resolve())
-        if window:
-            expr = (f"(SELECT * FROM {expr} WHERE CAST(issue_time AS TIMESTAMPTZ) >= '{window[0]}' "
-                    f"AND CAST(issue_time AS TIMESTAMPTZ) < '{window[1]}')")
-        run_layer(con, 'scoring', {'predictions': expr})
+        con = build(input_dir, predictions=path, scope=window)       # raises unless the file covers the scope
         rows = con.execute('SELECT model, task_a, task_b FROM gold.scoreboard').fetchall()
+        cohorts.add(con.execute('SELECT count(*) FROM gold.score_cohort').fetchall()[0][0])
         con.close()
         for model, a, b in rows:
             out.setdefault(name, {})[model] = {'task_a': round(a, 2), 'task_b': round(b, 2)}
+    assert len(cohorts) <= 1, 'files scored on different cohorts'
     return out
 
 

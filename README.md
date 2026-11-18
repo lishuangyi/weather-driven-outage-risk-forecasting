@@ -69,7 +69,8 @@ Features, members and design choices are in [docs/MODEL.md](docs/MODEL.md). The 
 
 These are local scores with the challenge formula: 100 × (0.75 × normalised AUPRC + 0.25 × (1 − MAE)) on the risk
 scale, pooled over counties, architectures, issues and leads. They are not certified by the organisers. Persistence
-holds the latest observation and is scored on the same cases.
+holds the latest observation. Both are scored on one cohort: the requests with available truth (84–86 % of 2025; only
+25–33 % for Rockingham, whose outage feed has long gaps).
 
 | Model | Data window | Role of the window in development | Task A model / persistence | Task B model / persistence |
 |---|---|---|---:|---:|
@@ -116,6 +117,7 @@ On every push, GitHub Actions installs the CPU environment and runs these steps:
    - no lookahead: later data leaves earlier forecasts and the SQL history, weather and radar features unchanged;
    - input validation;
    - atomic warehouse builds with a quality gate;
+   - prediction files: duplicate, missing and extra keys or invalid values rejected; one cohort per score;
    - SQL against Python parity for the 30 history features, the labels and the scores;
    - the metric against scikit-learn;
    - the reference trainer's NULL handling, purging and output format.

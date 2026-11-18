@@ -10,7 +10,8 @@ Layers (SQL files in sql/, executed in name order):
   silver  typed tables with an explicit grain, every record revision kept; data-quality checks
   gold    point-in-time outage history per issue, the 30 history features, weather and radar as of the issue,
           request labels, and model-ready examples (features + label) for the reference model
-  scoring with --predictions: the scored cases (model and persistence baseline), metrics by dimension, scoreboard
+  scoring with --predictions: checks the file against the scope (one valid prediction per request), then scores
+          the model and persistence on the same cohort: metrics by dimension, scoreboard, coverage
 Reference tables (schema ref) come from configs/inference.json: architectures (x0, k), counties, request grids.
 
 The warehouse is a second, independent implementation next to the Python pipeline; tests/test_sql_parity.py checks
@@ -19,6 +20,7 @@ that both give the same features, labels and scores.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import re
 import sys
@@ -107,6 +109,36 @@ class QualityError(RuntimeError):
     """A data-quality check with severity 'error' failed; no gold tables were built from the input."""
 
 
+class PredictionError(QualityError):
+    """The predictions file does not cover the scoring scope exactly once with valid values; nothing was scored."""
+
+
+def scope_filter(scope: tuple[str, str] | None) -> str:
+    """SQL condition on issue_s for a [start, end) window of UTC issue times (ISO dates or timestamps)."""
+    if scope is None:
+        return 'TRUE'
+    start, end = (f"epoch(TIMESTAMPTZ '{t}{'' if 'T' in t or ' ' in t else ' 00:00:00'}+00')" for t in scope)
+    return f'(issue_s >= {start} AND issue_s < {end})'
+
+
+def run_scoring(con: duckdb.DuckDBPyConnection, predictions: Path, scope: tuple[str, str] | None = None,
+                on_fail: str = 'raise') -> None:
+    """Scoring layer for one predictions file (Parquet or CSV) on the requests of `scope` (default: all)."""
+    predictions = Path(predictions).resolve()
+    values = {'predictions': source(predictions), 'scope_filter': scope_filter(scope)}
+    files = sorted((SQL_DIR / 'scoring').glob('*.sql'))
+    con.execute(render(files[0].read_text(encoding='utf-8'), values))
+    failed = con.execute("SELECT check_name, violations FROM gold.prediction_checks WHERE status = 'FAIL'").fetchall()
+    if failed and on_fail == 'raise':
+        raise PredictionError(f'{predictions.name}: ' + '; '.join(f'{n} ({v:,})' for n, v in failed))
+    for path in files[1:]:
+        con.execute(render(path.read_text(encoding='utf-8'), values))
+    digest = hashlib.sha256(predictions.read_bytes()).hexdigest()
+    con.execute('CREATE OR REPLACE TABLE gold.score_run AS SELECT ? AS predictions_file, ? AS predictions_sha256, '
+                '? AS scope_start, ? AS scope_end, now() AS scored_at',
+                [predictions.name, digest, scope[0] if scope else None, scope[1] if scope else None])
+
+
 def _connect(path: Path | str) -> duckdb.DuckDBPyConnection:
     con = duckdb.connect(str(path), config={'TimeZone': 'UTC'})
     con.execute('SET enable_progress_bar = false')
@@ -119,13 +151,16 @@ def _remove(path: Path) -> None:
 
 
 def build(input_dir: Path, db: Path | str = ':memory:', predictions: Path | None = None, lookback_minutes: int = 4320,
-          config: Config | None = None, on_fail: str = 'raise') -> duckdb.DuckDBPyConnection:
+          config: Config | None = None, on_fail: str = 'raise',
+          scope: tuple[str, str] | None = None) -> duckdb.DuckDBPyConnection:
     """Build the warehouse for one input directory and return the open connection.
 
     The build is atomic: a file database is written to `<db>.building` and replaces `<db>` only when every layer
     succeeded, so a failed build never touches an existing warehouse. When a quality check with severity 'error'
     fails, the build stops before the gold layer and raises QualityError (on_fail='raise'); on_fail='continue' builds
     everything anyway, for inspecting broken inputs. No model files are needed.
+    With `predictions`, the file is scored on the requests whose issue time lies in `scope` = (start, end), UTC,
+    default all requests; a file that does not cover them exactly once raises PredictionError (see run_scoring).
     """
     if on_fail not in ('raise', 'continue'):
         raise ValueError("on_fail must be 'raise' or 'continue'")
@@ -156,8 +191,7 @@ def build(input_dir: Path, db: Path | str = ':memory:', predictions: Path | None
             raise QualityError('data-quality checks failed: ' + '; '.join(f'{n} ({v:,} rows)' for n, v in failed))
         run_layer(con, 'gold', values)
         if predictions is not None:
-            values['predictions'] = source(Path(predictions).resolve())
-            run_layer(con, 'scoring', values)
+            run_scoring(con, predictions, scope, on_fail)
     except BaseException:
         con.close()
         if final is not None:
@@ -177,6 +211,16 @@ def report(con: duckdb.DuckDBPyConnection) -> str:
             'SELECT check_name, severity, violations, example, status FROM silver.quality_checks').fetchall():
         lines.append(f'  [{status:4s}] {name}: {violations:,}' + (f'  (e.g. {example})' if example else ''))
     tables = {t for (t,) in con.sql("SELECT table_name FROM information_schema.tables WHERE table_schema = 'gold'").fetchall()}
+    if 'prediction_checks' in tables:
+        lines.append('\nPrediction file checks')
+        for name, violations, status in con.sql('SELECT check_name, violations, status FROM gold.prediction_checks').fetchall():
+            lines.append(f'  [{status:4s}] {name}: {violations:,}')
+    if 'coverage' in tables:
+        lines.append('\nCoverage of the scope')
+        for task, req, sc, nt, inv in con.sql('SELECT task, sum(requested), sum(scored), sum(excluded_no_truth), '
+                                              'sum(excluded_invalid_truth) FROM gold.coverage GROUP BY task ORDER BY task').fetchall():
+            lines.append(f'  Task {task}: {req:,} requested, {sc:,} scored ({sc / req:.1%}); '
+                         f'excluded {nt:,} without truth, {inv:,} with invalid truth')
     if 'scoreboard' in tables:
         lines.append('\nScoreboard (pooled, challenge formula; local truth)')
         lines.append(f"  {'model':12s} {'Task A':>8s} {'Task B':>8s} {'general.':>9s} {'technical':>10s}")
@@ -199,6 +243,8 @@ def main(argv=None) -> int:
     b.add_argument('--db', type=Path, default=Path('out/warehouse.duckdb'))
     b.add_argument('--predictions', type=Path, help='predictions.csv to score (adds the scoring tables)')
     b.add_argument('--lookback-minutes', type=int, default=4320)
+    b.add_argument('--start', help='score only issues from this UTC time (e.g. 2025-06-01)')
+    b.add_argument('--end', help='... up to, not including, this UTC time')
     r = sub.add_parser('report', help='print the quality checks and the scoreboard')
     r.add_argument('--db', type=Path, default=Path('out/warehouse.duckdb'))
     q = sub.add_parser('query', help='run a SQL file (e.g. sql/analysis/*.sql) against the warehouse')
@@ -211,7 +257,8 @@ def main(argv=None) -> int:
         return 0
     if a.command == 'build':
         try:
-            con = build(a.input_dir, a.db, a.predictions, a.lookback_minutes)
+            scope = (a.start or '1900-01-01', a.end or '2200-01-01') if (a.start or a.end) else None
+            con = build(a.input_dir, a.db, a.predictions, a.lookback_minutes, scope=scope)
         except QualityError as error:
             print(f'Build stopped, {a.db} left unchanged: {error}', file=sys.stderr)
             return 1

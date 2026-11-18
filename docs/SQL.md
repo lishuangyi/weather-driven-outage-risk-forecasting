@@ -30,8 +30,9 @@ input directory (Parquet / CSV)
                   final observations and request labels               gold.final_outages, .labels
                   weather and radar as of the issue                   gold.weather_as_of, .radar_as_of
                   model-ready training/prediction table               gold.examples               (reference model)
-       └─ scoring model and persistence cases next to their truth     gold.scored_cases           (needs --predictions)
-                  metric by dimension, headline scores                gold.metrics, .scoreboard   (needs --predictions)
+       └─ scoring predictions checked against the scope               gold.score_scope, .prediction_checks  (needs --predictions)
+                  one cohort: model and persistence next to the truth gold.score_cohort, .scored_cases
+                  metric by dimension, headline scores, coverage      gold.metrics, .scoreboard, .coverage
 ref: architectures (x0, k) and request grids from configs/inference.json
 ```
 
@@ -90,6 +91,16 @@ DuckDB aggregates in parallel, so a plain floating-point `sum` or `regr_slope` c
 run to the next (about 1e-19 here). The slope therefore uses ordered aggregates (`sum(... ORDER BY t)`), and the
 features are deterministic.
 
+## Scoring: one cohort for every model
+
+Scoring starts from a **scope**: the requests whose issue time lies in a window (`--start`, `--end`), or all requests
+when no window is given. Inside the scope, the predictions file must hold exactly one prediction per request, with
+finite values in [0, 1]. Duplicate keys, missing keys, keys that match no request, and invalid values all stop the
+scoring with an error. Prediction rows outside the scope are ignored and counted. The **cohort** is the set of scope
+requests whose truth is available and valid. The model and persistence are both scored on this one cohort. Requests
+left out of it are reported in `gold.coverage` with the reason, by task, county and month
+(`tests/test_scoring_cohort.py`).
+
 ## The metric in SQL
 
 Average precision with tied predictions treated as one threshold (as scikit-learn computes it):
@@ -113,6 +124,7 @@ groups.
 | `model_vs_persistence.sql` | where does the model beat persistence? | gains in every county; largest in Wayne (A +24.1) and Rockingham (B +14.9); smallest in Miami-Dade, where persistence is already strong |
 | `largest_events.sql` | did the model see the big outages coming? | all five Miami-Dade peaks and four of five Wayne peaks get risk ≥ 0.97 from the issue 0–24 h before them; the small Los Angeles peaks are missed (risk ≤ 0.21) |
 | `reliability.sql` | is the predicted risk calibrated? | both tasks are close to calibrated below 0.5 and over-confident above it; top bin: Task A predicted 0.98 vs observed 0.64, Task B 0.99 vs 0.88. A calibration step is a natural next improvement |
+| `coverage.sql` | how much of the scope can be scored, and why not? | 2025: 84 % (A) and 86 % (B) of requests have truth. Rockingham is the exception, at only 25 % / 33 %, because its outage feed has long gaps. The other counties are at 98 % or more |
 | `data_freshness.sql` | how fresh was the history at forecast time? | Rockingham's feed lags (mean age 2 h for Task B, up to 23 h); the other counties are current at every issue |
 
 Persistence computed in SQL scores 38.82 (A) and 65.88 (B) on June–August 2025. This is the same baseline as in the

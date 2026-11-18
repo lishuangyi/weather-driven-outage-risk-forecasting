@@ -54,7 +54,8 @@ These breakdowns are diagnostics. AUPRC does not average across groups, so the r
 | Los Angeles, CA | 3.5 % | 27.39 / 25.28 | 41.49 / 38.11 |
 | Miami-Dade, FL | 21.6 % | 71.22 / 70.09 | 88.27 / 86.18 |
 
-The gains are largest where outages come and go with storms (Wayne, Harris, Rockingham). They are smallest where
+Rockingham's scores rest on far fewer cases than the others: only about a quarter (A) to a third (B) of its requests
+have truth (section 8). The gains are largest where outages come and go with storms (Wayne, Harris, Rockingham). They are smallest where
 outage levels persist (Miami-Dade) or events are rare and small (Los Angeles).
 
 **By architecture**: Task A ranges from 53.02 (ARC01, x₀ = 0.100 %) to 55.78 (ARC04, x₀ = 0.160 %), and Task B from
@@ -112,3 +113,20 @@ observed outage share, on a log scale; the band marks the four architecture thre
 27 June at 00:00 UTC rises into the risk band about a day before the storm peak, which reaches about 2.6 % of
 customers. The forecast issued on 28 June follows the restoration but decays more slowly than the real recovery.
 The figure is made by `scripts/make_figures.py`.
+
+## 8. Coverage: which requests can be scored
+
+The model and persistence are scored on one cohort: the requests whose truth is available and valid. Requests
+without truth are excluded and counted (`sql/analysis/coverage.sql`; rules in [SQL.md](SQL.md#scoring-one-cohort-for-every-model)).
+
+| 2025, full year | Requested | Scored | Share scored | Lowest month |
+|---|---:|---:|---:|---|
+| Task A, all counties | 350,400 | 294,092 | 83.9 % | |
+| Task B, all counties | 2,102,400 | 1,809,572 | 86.1 % | |
+| Task A, Rockingham NH | 70,080 | 17,356 | 24.8 % | 15.3 % (February) |
+| Task B, Rockingham NH | 420,480 | 140,460 | 33.4 % | 22.0 % (January) |
+| other four counties | | | 97.9–99.9 % | 90.1 % (Miami-Dade A, March) |
+
+No case is excluded for invalid truth. Coverage depends on the outage feed: Rockingham's EAGLE-I series has long
+gaps, which also explains its stale history at issue time (`sql/analysis/data_freshness.sql`). For June–August
+2025, 86.1 % (A) and 88.4 % (B) of the requests are scored.
