@@ -14,15 +14,21 @@ usually last longer than a few hours.
 
 ## 1. Headline
 
-| Window | Use of the window | Task A model / persistence | Task B model / persistence |
+| Window (UTC issue time) | Role of the window in development | Task A model / persistence | Task B model / persistence |
 |---|---|---:|---:|
-| June–August 2025 | **model selection** (the evaluation window of the challenge) | **54.52** / 38.82 | **75.13** / 65.88 |
-| the other 9 months of 2025 | neither training nor selection | **55.00** / 46.92 | **72.75** / 66.59 |
+| 2025-06-01 to 2025-08-31 | member and weight selection | **54.45** / 38.69 | **75.13** / 65.88 |
+| the other 9 months of 2025 | retrospective; January–May informed one fallback decision | **55.00** / 46.92 | **72.75** / 66.59 |
 | all of 2025 | | **54.88** / 43.92 | **73.44** / 66.33 |
 
-The unseen months score about the same as the selection window, so the selection did not overfit that window. On
-June–August the gain comes mostly from ranking (normalised AUPRC: A 0.44 against 0.24 for persistence, B 0.70
-against 0.58). The risk MAE improves as well (A 0.134 against 0.160, B 0.083 against 0.100).
+These scores use the full-year 2025 inputs. The June–August package that `make predict` uses has truth only up to
+31 August, so the last issues lose part of their targets. The same forecasts then score 54.52 / 38.82 (A) and
+75.13 / 65.88 (B); the breakdowns in section 2 use that package.
+
+The gain over persistence is smaller on the retrospective months: Task A +8.1 against +15.8 in the selection window,
+Task B +6.2 against +9.3. Part of the difference comes from the selection itself and part from the season: summer has
+more storm-driven outages, and those are where the model gains most. With one year of data these two effects cannot
+be separated. On June–August the gain comes mostly from ranking (normalised AUPRC: A 0.44 against 0.24 for
+persistence, B 0.70 against 0.58). The risk MAE improves as well (A 0.134 against 0.160, B 0.083 against 0.100).
 
 ## 2. June–August 2025 broken down
 
@@ -81,12 +87,8 @@ for the delay experiment.
 
 ## 5. Reference model trained from scratch
 
-| Evaluation | Reference | Persistence | Frozen ensemble |
-|---|---:|---:|---:|
-| 2024 (test year), A / B | 53.43 / 73.04 | 49.75 / 69.56 | in its training data |
-| 2025 full year | 42.60 / 71.12 | 43.92 / 66.33 | 54.88 / 73.44 |
-
-Protocol, selection table and the analysis of the gap are in [TRAINING.md](TRAINING.md).
+The v1 results of the reference trainer are withdrawn. A data-loading bug turned missing labels into zeros during
+training and selection; see [TRAINING.md](TRAINING.md). They will be replaced after the fix and re-run.
 
 ## 6. Calibration and events
 
@@ -94,3 +96,13 @@ The predicted risk is calibrated below 0.5 and over-confident above it. In the t
 0.64 of those cases are events; Task B predicts 0.99 and 0.88 are events (`sql/analysis/reliability.sql`). All five
 Miami-Dade peaks and four of the five Wayne peaks got risk ≥ 0.97 from the issue 0–24 h earlier. The small Los
 Angeles peaks were missed (`sql/analysis/largest_events.sql`).
+
+## 7. Example: Wayne County storm, June 2025
+
+![48-hour forecasts against observed outages, Wayne County, 26–30 June 2025](assets/event_wayne_2025-06.png)
+
+This is a selected case, not a typical one. Two Task A forecasts for Wayne County (Detroit) are drawn against the
+observed outage share, on a log scale; the band marks the four architecture thresholds. The forecast issued on
+27 June at 00:00 UTC rises into the risk band about a day before the storm peak, which reaches about 2.6 % of
+customers. The forecast issued on 28 June follows the restoration but decays more slowly than the real recovery.
+The figure is made by `scripts/make_figures.py`.

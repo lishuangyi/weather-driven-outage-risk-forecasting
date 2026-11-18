@@ -1,5 +1,12 @@
 # Reference model: training from scratch
 
+> **v1 results withdrawn (2026-11-18).** A review found a data-loading bug. DuckDB returns NULL values as masked numpy
+> arrays, and the conversion to polars dropped the mask, so missing labels and missing features became zeros. In the
+> 2024 examples, 76,656 of the 614,880 labels were missing and were trained on as "no outage". The selection set of
+> 2023 also lacked the cut-off at 1 January 2024. The scores below are kept only as a record and will be replaced
+> after the fix and a full re-run. The frozen ensemble is not affected: its scores come from the SQL metric, which
+> reads NULLs correctly.
+
 The frozen ensemble (`models/`, see [MODEL.md](MODEL.md)) was built with the original experiment code. That code
 spans many scripts and caches and is not part of this repository. `outage_forecast.reference` is a clean
 replacement that a reader can run end to end: one feature table, one fixed recipe and a chronological protocol.

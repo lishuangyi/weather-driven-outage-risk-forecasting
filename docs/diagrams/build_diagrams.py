@@ -40,6 +40,12 @@ KIND = {
     'tree':    ('#c2410c', '#fff7ed', '#f97316', 'Boosted trees'),
     'tail':    ('#be123c', '#fff1f2', '#f43f5e', 'Tail classifier'),
     'out':     (INK, '#f1f5f9', '#334155', 'Blend and output'),
+    # system overview: one colour per component
+    'pipe':    ('#475569', '#f8fafc', '#94a3b8', 'Pipeline'),
+    'infer':   ('#6d28d9', '#f5f3ff', '#8b5cf6', 'Frozen ensemble'),
+    'sql':     ('#1d4ed8', '#eff6ff', '#3b82f6', 'Warehouse'),
+    'train':   ('#c2410c', '#fff7ed', '#f97316', 'Trainer'),
+    'eval':    (INK, '#f1f5f9', '#334155', 'Evaluation'),
 }
 
 
@@ -304,7 +310,43 @@ def task_b() -> Figure:
     return f
 
 
-FIGURES = {'shared-core': (shared_core, 'Model · both tasks'), 'task-a': (task_a, 'Model · Task A, 48 h hourly'),
+def system_overview() -> Figure:
+    f = Figure('diagram-system-overview', 'System overview',
+               'Public outage, weather and radar archives are turned into county input tables with availability times; '
+               'the frozen ensemble and the DuckDB warehouse read them, the warehouse also feeds the reference trainer, '
+               'and both prediction paths are scored against the same truth and a persistence baseline.', 960, 452)
+    # arrows
+    f.path([(168, 64), (184, 64), (184, 112), (200, 112)], 'outage')
+    f.path([(168, 128), (200, 128)], 'weather')
+    f.path([(168, 192), (184, 192), (184, 144), (200, 144)], 'radar')
+    f.path([(336, 128), (368, 128)], 'pipe', width=1.6)
+    f.path([(504, 116), (520, 116), (520, 64), (552, 64)], 'pipe', width=1.6)
+    f.path([(504, 140), (532, 140), (532, 200), (552, 200)], 'pipe', width=1.6)
+    f.path([(636, 240), (636, 300)], 'sql')
+    f.path([(720, 64), (852, 64), (852, 160)], 'infer')
+    f.path([(720, 200), (768, 200)], 'sql')
+    f.path([(720, 336), (852, 336), (852, 240)], 'train')
+    # labels
+    f.label(702, 270, 'GOLD.EXAMPLES', 'sql')
+    f.label(786, 52, 'PREDICTIONS', 'infer')
+    f.label(786, 324, 'PREDICTIONS', 'train')
+    f.label(744, 186, 'TRUTH', 'sql')
+    # nodes
+    f.node(24, 40, 144, 48, 'outage', 'EAGLE-I outages', ['ORNL · 15 min'])
+    f.node(24, 104, 144, 48, 'weather', 'HRRR forecasts', ['NOAA · 00Z, 18Z runs'])
+    f.node(24, 168, 144, 48, 'radar', 'MRMS radar', ['NOAA · 10 min'])
+    f.node(200, 92, 136, 72, 'pipe', 'Data pipeline', ['download, decode', 'county polygons'], name_size=12.5)
+    f.node(368, 92, 136, 72, 'pipe', 'Input tables', ['Parquet, 5 tables', 'with availability'], name_size=12.5)
+    f.node(552, 24, 168, 80, 'infer', 'Inference', ['frozen GRU + XGBoost', 'infer.py'], tag='ENSEMBLE')
+    f.node(552, 160, 168, 80, 'sql', 'Warehouse', ['bronze → silver → gold', 'sql/'], tag='DUCKDB')
+    f.node(552, 300, 168, 72, 'train', 'Reference trainer', ['XGBoost, 2022–2024', 'reference.py'], tag='TRAIN')
+    f.node(768, 160, 168, 80, 'eval', 'Evaluation', ['challenge score', 'vs persistence'], tag='SQL SCORING')
+    f.note(24, 400, 'Every row keeps its availability time; features at issue time T only read rows available by T.', 11)
+    f.legend(408)
+    return f
+
+
+FIGURES = {'system-overview': (system_overview, 'Architecture · whole repository'), 'shared-core': (shared_core, 'Model · both tasks'), 'task-a': (task_a, 'Model · Task A, 48 h hourly'),
            'task-b': (task_b, 'Model · Task B, 6 h every 5 min')}
 
 

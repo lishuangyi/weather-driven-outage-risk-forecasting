@@ -51,6 +51,6 @@ any delays it is given and never uses data early. It does not try to compensate 
 
 - **Training years.** All frozen models were fitted on 2022–2024 labels. 2025 is never a training year.
 - **Selection.** The ensemble weights and members were chosen on June–August 2025, the challenge window. This is
-  disclosed with every score, and the other 9 months of 2025 serve as the unseen check ([RESULTS.md](RESULTS.md)).
+  disclosed with every score, and the other 9 months of 2025 serve as a retrospective check ([RESULTS.md](RESULTS.md)); January–May also informed one fallback decision.
 - **Reference trainer.** The trainer uses a chronological split: 2022 fit, 2023 selection, 2024 test, 2025 final.
   Training examples whose target falls in the next period are dropped (purging). See [TRAINING.md](TRAINING.md).

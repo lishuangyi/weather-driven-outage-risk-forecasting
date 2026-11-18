@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System overview</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif; background: #ffffff; color: #0f172a; padding: 3rem 2rem; display: flex; justify-content: center; }
+.frame { max-width: 1000px; width: 100%; }
+.eyebrow { font-family: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #475569; margin-bottom: 0.5rem; }
+h1 { font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
+.diagram-container { width: 100%; overflow-x: auto; }
+svg { width: 100%; min-width: 960px; display: block; }
+@media print { .diagram-container { overflow-x: visible; } svg { min-width: 0; } }
+</style>
+</head>
+<body>
+<div class="frame">
+<p class="eyebrow">Architecture · whole repository</p>
+<h1>System overview</h1>
+<div class="diagram-container">
+<svg viewBox="0 0 960 452" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="diagram-system-overview-title diagram-system-overview-desc">
+<title id="diagram-system-overview-title">System overview</title>
+<desc id="diagram-system-overview-desc">Public outage, weather and radar archives are turned into county input tables with availability times; the frozen ensemble and the DuckDB warehouse read them, the warehouse also feeds the reference trainer, and both prediction paths are scored against the same truth and a persistence baseline.</desc>
+<defs><marker id="diagram-system-overview-arrow-outage" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4338ca"/></marker><marker id="diagram-system-overview-arrow-weather" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#0e7490"/></marker><marker id="diagram-system-overview-arrow-radar" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#047857"/></marker><marker id="diagram-system-overview-arrow-base" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#475569"/></marker><marker id="diagram-system-overview-arrow-nn" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#6d28d9"/></marker><marker id="diagram-system-overview-arrow-tree" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#c2410c"/></marker><marker id="diagram-system-overview-arrow-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#be123c"/></marker><marker id="diagram-system-overview-arrow-out" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#0f172a"/></marker><marker id="diagram-system-overview-arrow-pipe" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#475569"/></marker><marker id="diagram-system-overview-arrow-infer" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#6d28d9"/></marker><marker id="diagram-system-overview-arrow-sql" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#1d4ed8"/></marker><marker id="diagram-system-overview-arrow-train" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#c2410c"/></marker><marker id="diagram-system-overview-arrow-eval" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#0f172a"/></marker></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<path d="M 168,64 L 176,64 Q 184,64 184,72 L 184,104 Q 184,112 192,112 L 200,112" fill="none" stroke="#4338ca" stroke-width="1.4" marker-end="url(#diagram-system-overview-arrow-outage)"/>
+<path d="M 168,128 L 200,128" fill="none" stroke="#0e7490" stroke-width="1.4" marker-end="url(#diagram-system-overview-arrow-weather)"/>
+<path d="M 168,192 L 176,192 Q 184,192 184,184 L 184,152 Q 184,144 192,144 L 200,144" fill="none" stroke="#047857" stroke-width="1.4" marker-end="url(#diagram-system-overview-arrow-radar)"/>
+<path d="M 336,128 L 368,128" fill="none" stroke="#475569" stroke-width="1.6" marker-end="url(#diagram-system-overview-arrow-pipe)"/>
+<path d="M 504,116 L 512,116 Q 520,116 520,108 L 520,72 Q 520,64 528,64 L 552,64" fill="none" stroke="#475569" stroke-width="1.6" marker-end="url(#diagram-system-overview-arrow-pipe)"/>
+<path d="M 504,140 L 524,140 Q 532,140 532,148 L 532,192 Q 532,200 540,200 L 552,200" fill="none" stroke="#475569" stroke-width="1.6" marker-end="url(#diagram-system-overview-arrow-pipe)"/>
+<path d="M 636,240 L 636,300" fill="none" stroke="#1d4ed8" stroke-width="1.4" marker-end="url(#diagram-system-overview-arrow-sql)"/>
+<path d="M 720,64 L 844,64 Q 852,64 852,72 L 852,160" fill="none" stroke="#6d28d9" stroke-width="1.4" marker-end="url(#diagram-system-overview-arrow-infer)"/>
+<path d="M 720,200 L 768,200" fill="none" stroke="#1d4ed8" stroke-width="1.4" marker-end="url(#diagram-system-overview-arrow-sql)"/>
+<path d="M 720,336 L 844,336 Q 852,336 852,328 L 852,240" fill="none" stroke="#c2410c" stroke-width="1.4" marker-end="url(#diagram-system-overview-arrow-train)"/>
+<rect x="658" y="262" width="88" height="16" rx="2" fill="#ffffff"/>
+<text x="702" y="273.24" fill="#1d4ed8" font-size="9" font-weight="500" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle" letter-spacing="0.06em">GOLD.EXAMPLES</text>
+<rect x="748" y="44" width="76" height="16" rx="2" fill="#ffffff"/>
+<text x="786" y="55.24" fill="#6d28d9" font-size="9" font-weight="500" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle" letter-spacing="0.06em">PREDICTIONS</text>
+<rect x="748" y="316" width="76" height="16" rx="2" fill="#ffffff"/>
+<text x="786" y="327.24" fill="#c2410c" font-size="9" font-weight="500" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle" letter-spacing="0.06em">PREDICTIONS</text>
+<rect x="724" y="178" width="40" height="16" rx="2" fill="#ffffff"/>
+<text x="744" y="189.24" fill="#1d4ed8" font-size="9" font-weight="500" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle" letter-spacing="0.06em">TRUTH</text>
+<rect x="24" y="40" width="144" height="48" rx="6" fill="#ffffff"/>
+<rect x="24" y="40" width="144" height="48" rx="6" fill="#eef2ff" stroke="#6366f1" stroke-width="1.2"/>
+<text x="96.0" y="61.5" fill="#4338ca" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">EAGLE-I outages</text>
+<text x="96.0" y="76.5" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">ORNL · 15 min</text>
+<rect x="24" y="104" width="144" height="48" rx="6" fill="#ffffff"/>
+<rect x="24" y="104" width="144" height="48" rx="6" fill="#ecfeff" stroke="#06b6d4" stroke-width="1.2"/>
+<text x="96.0" y="125.5" fill="#0e7490" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">HRRR forecasts</text>
+<text x="96.0" y="140.5" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">NOAA · 00Z, 18Z runs</text>
+<rect x="24" y="168" width="144" height="48" rx="6" fill="#ffffff"/>
+<rect x="24" y="168" width="144" height="48" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1.2"/>
+<text x="96.0" y="189.5" fill="#047857" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">MRMS radar</text>
+<text x="96.0" y="204.5" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">NOAA · 10 min</text>
+<rect x="200" y="92" width="136" height="72" rx="6" fill="#ffffff"/>
+<rect x="200" y="92" width="136" height="72" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+<text x="268.0" y="118.0" fill="#475569" font-size="12.5" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Data pipeline</text>
+<text x="268.0" y="133.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">download, decode</text>
+<text x="268.0" y="146.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">county polygons</text>
+<rect x="368" y="92" width="136" height="72" rx="6" fill="#ffffff"/>
+<rect x="368" y="92" width="136" height="72" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+<text x="436.0" y="118.0" fill="#475569" font-size="12.5" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Input tables</text>
+<text x="436.0" y="133.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">Parquet, 5 tables</text>
+<text x="436.0" y="146.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">with availability</text>
+<rect x="552" y="24" width="168" height="80" rx="6" fill="#ffffff"/>
+<rect x="552" y="24" width="168" height="80" rx="6" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.2"/>
+<rect x="562" y="32" width="46" height="12" rx="2" fill="#ffffff" stroke="#8b5cf6" stroke-width="0.8"/>
+<text x="585.0" y="41" fill="#6d28d9" font-size="7" font-weight="600" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">ENSEMBLE</text>
+<text x="636.0" y="64.0" fill="#6d28d9" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Inference</text>
+<text x="636.0" y="79.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">frozen GRU + XGBoost</text>
+<text x="636.0" y="92.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">infer.py</text>
+<rect x="552" y="160" width="168" height="80" rx="6" fill="#ffffff"/>
+<rect x="552" y="160" width="168" height="80" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.2"/>
+<rect x="562" y="168" width="38" height="12" rx="2" fill="#ffffff" stroke="#3b82f6" stroke-width="0.8"/>
+<text x="581.0" y="177" fill="#1d4ed8" font-size="7" font-weight="600" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">DUCKDB</text>
+<text x="636.0" y="200.0" fill="#1d4ed8" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Warehouse</text>
+<text x="636.0" y="215.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">bronze → silver → gold</text>
+<text x="636.0" y="228.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">sql/</text>
+<rect x="552" y="300" width="168" height="72" rx="6" fill="#ffffff"/>
+<rect x="552" y="300" width="168" height="72" rx="6" fill="#fff7ed" stroke="#f97316" stroke-width="1.2"/>
+<rect x="562" y="308" width="32" height="12" rx="2" fill="#ffffff" stroke="#f97316" stroke-width="0.8"/>
+<text x="578.0" y="317" fill="#c2410c" font-size="7" font-weight="600" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">TRAIN</text>
+<text x="636.0" y="336.0" fill="#c2410c" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Reference trainer</text>
+<text x="636.0" y="351.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">XGBoost, 2022–2024</text>
+<text x="636.0" y="364.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">reference.py</text>
+<rect x="768" y="160" width="168" height="80" rx="6" fill="#ffffff"/>
+<rect x="768" y="160" width="168" height="80" rx="6" fill="#f1f5f9" stroke="#334155" stroke-width="1.2"/>
+<rect x="778" y="168" width="58" height="12" rx="2" fill="#ffffff" stroke="#334155" stroke-width="0.8"/>
+<text x="807.0" y="177" fill="#0f172a" font-size="7" font-weight="600" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">SQL SCORING</text>
+<text x="852.0" y="200.0" fill="#0f172a" font-size="13" font-weight="600" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Evaluation</text>
+<text x="852.0" y="215.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">challenge score</text>
+<text x="852.0" y="228.0" fill="#475569" font-size="9.5" font-weight="400" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="middle">vs persistence</text>
+<text x="24" y="400" fill="#475569" font-size="11" font-weight="400" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Every row keeps its availability time; features at issue time T only read rows available by T.</text>
+<line x1="24" y1="408" x2="936" y2="408" stroke="rgba(15,23,42,0.12)" stroke-width="0.8"/>
+<text x="24" y="434" fill="#64748b" font-size="8" font-weight="600" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace" text-anchor="start" letter-spacing="0.16em">LEGEND</text>
+<rect x="96" y="424" width="14" height="14" rx="3" fill="#eef2ff" stroke="#6366f1" stroke-width="1.2"/>
+<text x="116" y="435" fill="#4338ca" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Outage records</text>
+<rect x="220" y="424" width="14" height="14" rx="3" fill="#ecfeff" stroke="#06b6d4" stroke-width="1.2"/>
+<text x="240" y="435" fill="#0e7490" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Weather forecasts</text>
+<rect x="362" y="424" width="14" height="14" rx="3" fill="#ecfdf5" stroke="#10b981" stroke-width="1.2"/>
+<text x="382" y="435" fill="#047857" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Radar</text>
+<rect x="434" y="424" width="14" height="14" rx="3" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+<text x="454" y="435" fill="#475569" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Pipeline</text>
+<rect x="524" y="424" width="14" height="14" rx="3" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.2"/>
+<text x="544" y="435" fill="#6d28d9" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Frozen ensemble</text>
+<rect x="654" y="424" width="14" height="14" rx="3" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.2"/>
+<text x="674" y="435" fill="#1d4ed8" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Warehouse</text>
+<rect x="749" y="424" width="14" height="14" rx="3" fill="#fff7ed" stroke="#f97316" stroke-width="1.2"/>
+<text x="769" y="435" fill="#c2410c" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Trainer</text>
+<rect x="833" y="424" width="14" height="14" rx="3" fill="#f1f5f9" stroke="#334155" stroke-width="1.2"/>
+<text x="853" y="435" fill="#0f172a" font-size="10.5" font-weight="500" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="start">Evaluation</text>
+</svg>
+</div>
+</div>
+</body>
+</html>

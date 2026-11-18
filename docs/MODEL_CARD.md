@@ -32,7 +32,7 @@ unless you retrain it. The forecasts are statistical; they do not replace utilit
 
 - **Training.** Labels from 2022–2024 for 40 counties: the 5 forecast counties and 35 neighbours.
 - **Selection.** June–August 2025.
-- **Unseen check.** The other 9 months of 2025.
+- **Retrospective check.** The other 9 months of 2025; January–May also informed one fallback decision.
 - **Time rule.** Each input row carries an availability time, and the models only read rows available at the issue
   time ([TEMPORAL_CORRECTNESS.md](TEMPORAL_CORRECTNESS.md)).
 
@@ -46,8 +46,8 @@ baseline.
 
 | | Task A | Task B |
 |---|---:|---:|
-| June–August 2025 (selection window) | 54.52 (persistence 38.82) | 75.13 (65.88) |
-| other 9 months of 2025 (unseen) | 55.00 (46.92) | 72.75 (66.59) |
+| June–August 2025 (selection window) | 54.45 (persistence 38.69) | 75.13 (65.88) |
+| other 9 months of 2025 (retrospective) | 55.00 (46.92) | 72.75 (66.59) |
 
 Performance varies more across periods and counties than between models. A county and period with many events
 scores 70–90, while a quiet one scores 25–40. The lead also matters: Task A falls from 78 (1–6 h) to 45 (25–48 h).

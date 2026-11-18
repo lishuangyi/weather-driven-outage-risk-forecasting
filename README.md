@@ -1,171 +1,153 @@
 # Weather-Driven Power-Outage Risk Forecasting for AI Data Centers
 
-Forecasts how many customers in a US county will be without power over the next **48 hours (hourly)** and the next
-**6 hours (5-minute)**, and turns each forecast into a grid-supply risk for four AI data-center power architectures.
-Inputs are public: EAGLE-I outage records, NOAA HRRR weather forecasts and NOAA MRMS radar.
+[![CI](https://github.com/lishuangyi/weather-driven-outage-risk-forecasting/actions/workflows/ci.yml/badge.svg)](https://github.com/lishuangyi/weather-driven-outage-risk-forecasting/actions/workflows/ci.yml)
+![Python 3.12](https://img.shields.io/badge/python-3.12-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-![48-hour forecasts against observed outages, Wayne County, June 2025](docs/assets/event_wayne_2025-06.png)
+Forecasts the share of customers without power in five US counties, 48 hours ahead (hourly) and 6 hours ahead
+(every 5 minutes). Each forecast is then mapped to a grid-supply risk score for four AI data-center power
+architectures. All inputs are public: EAGLE-I outage records and NOAA HRRR weather forecasts and MRMS radar.
 
-*Wayne County (Detroit), 26–30 June 2025. The forecast issued on 27 June at 00:00 UTC rises above the risk band before
-the storm, and the 28 June forecast follows the restoration, though it decays more slowly than the real recovery.*
+- **Point-in-time features.** A forecast issued at time T reads only data published by T. Tests enforce this by
+  changing all later data.
+- **Two implementations of the data layer.** Python (polars) for inference and DuckDB SQL (bronze → silver → gold)
+  for features, labels, quality checks and scoring. Parity tests show that both give the same results.
+- **Frozen ensemble.** GRU history network and XGBoost Tweedie trees, with fallback models when radar, weather or
+  outage history is missing.
+- **Reproducible.** Pinned dependencies, SHA-256-checked release artifacts, offline CPU inference and CI.
 
-**What this project shows**
+## Quick start
 
-- **Point-in-time correctness.** A forecast issued at time T only reads data that was published by T. This holds for
-  the outage records, the weather runs and the radar frames, and a test checks it by changing every record published
-  after T (`tests/test_no_lookahead.py`).
-- **A hybrid model.** Gradient-boosted trees (XGBoost, Tweedie) on weather, radar and outage-history features are
-  combined with a GRU over the last 7 days of outages. Fallback models take over when radar, weather or outage history
-  is missing.
-- **Reproducible inference.** 618,240 forecasts for June–August 2025 run in about 30 s on a GPU or 1 min on a CPU, and
-  the output matches the frozen release byte for byte. Model files are checked against their SHA-256 before use.
-- **A SQL warehouse (DuckDB).** It is a second implementation of the data side in plain SQL, organised as bronze,
-  silver and gold layers. It covers point-in-time features (as-of joins on publication time), labels, data-quality
-  checks and the challenge metric. Tests check that it reproduces the 30 Python history features and the official
-  scores to within floating-point rounding (see [docs/SQL.md](docs/SQL.md)).
-- **Training from scratch.** A reference trainer fits one XGBoost model per task on the SQL training table. It uses
-  a chronological protocol: select on 2023, test on 2024, final model evaluated on 2025. The evaluation is
-  candid: the trainer beats persistence on the 2024 test, and on 2025 it comes out below the frozen ensemble
-  ([docs/TRAINING.md](docs/TRAINING.md)).
-- **An end-to-end data pipeline**, from public cloud archives (`s3://hrrrzarr`, `s3://noaa-mrms-pds`, Figshare) to
-  county-level Parquet tables. HRRR forecasts are aggregated over exact county polygons.
-
-## Quick start (CPU, Python 3.12)
+Requires Python 3.12 on Linux or WSL. The repository and its release assets are private for now, so use an
+account with access and an authenticated GitHub CLI (`gh auth login`).
 
 ```bash
 git clone https://github.com/lishuangyi/weather-driven-outage-risk-forecasting.git
 cd weather-driven-outage-risk-forecasting
-make setup          # pip install -r requirements/cpu.txt -r requirements/dev.txt && pip install -e .
-make models data    # frozen models (39 MB) + June–August 2025 inputs (75 MB), SHA-256 verified
-make predict        # out/predictions.csv: 618,240 rows
-make train          # optional: reference model from scratch (needs the 2022–2025 inputs, ≈3 min on GPU)
-make warehouse      # out/warehouse.duckdb: features, labels, quality checks, scores by county/lead/month (≈5 s)
-make demo           # out/demo/summary.html: one week in Harris County with scores and charts
-make test           # end-to-end, no-lookahead, SQL-vs-Python parity, input-validation and metric tests
+make setup            # CPU environment: pinned requirements + editable install
+make models data      # frozen models (39 MB) + June–August 2025 inputs (75 MB), SHA-256 verified
+make test             # test suite on a 2-day input in tests/fixtures (13,440 requests)
+make predict          # out/predictions.csv: 618,240 forecasts, about 1 min on CPU
+make warehouse        # out/warehouse.duckdb: features, labels, quality checks, scores
 ```
 
-The downloads come from this repository's [GitHub release](artifacts/release_v1.0.0.json) through the GitHub CLI if it
-is installed, otherwise over plain HTTPS. Inference itself runs offline.
+## System overview
 
-## Problem
+![System overview: public archives, data pipeline, input tables, inference, DuckDB warehouse, reference trainer, evaluation](docs/assets/diagram-system-overview.png)
 
-| | Task A | Task B |
-|---|---|---|
-| Issue times (UTC) | daily 00:00 | 00:00, 06:00, 12:00, 18:00 |
-| Horizon / step | 48 h / 1 h | 6 h / 5 min |
-| Target | mean outage share of the 4 quarter-hours ending at T | outage share at T (15-min value held) |
+The data pipeline turns the public archives into five county-level input tables. Each row keeps the time it became
+available. Two paths read these tables:
 
-Five counties are forecast: Los Angeles CA, Miami-Dade FL, Wayne MI, Rockingham NH and Harris TX. The outage share is
-x = customers out / customers served. Architecture *a* turns it into a risk
-P = 1 / (1 + exp(−4000 (x − x0ₐ))), with x0 from 0.100 % (ARC01) to 0.160 % (ARC04).
+- **Inference** runs the frozen ensemble and writes forecasts.
+- **The DuckDB warehouse** builds point-in-time features and labels. Its training table feeds the reference trainer.
 
-**Metric.** Each task pools all counties, architectures, issues and leads into one score,
-100 × (0.75 × normalised AUPRC + 0.25 × (1 − MAE)), computed on the risk scale. AUPRC is normalised by the event rate,
-and the event threshold is P ≥ 0.5.
+Both prediction paths are scored by the same SQL metric against the same truth and a persistence baseline.
 
-## Results
+## Model
 
-These are local scores computed with the challenge formula on our EAGLE-I truth, not organiser-certified results. The
-June–August 2025 window was **also used for model selection**, so treat it as a validation score. The models were
-trained on 2022–2024.
-
-| Window | Task A model / persistence | Task B model / persistence |
-|---|---:|---:|
-| June–August 2025 (selection window) | **54.52** / 38.82 | **75.13** / 65.88 |
-| The other 9 months of 2025 (used for neither training nor selection) | **55.00** / 46.92 | **72.75** / 66.59 |
-
-Persistence carries the latest observation forward to every target. The unseen months score about the same as the
-selection window, so the selection did not overfit that window. Scored month by month, the model beats persistence in
-all 12 months of 2025 for Task B and in 10 of 12 for Task A (January −0.2, February −4.3). Absolute scores depend
-mainly on how many outage events a period contains, and Task A is weakest in quiet periods.
-
-**Reference model trained from scratch** (`make train`, one XGBoost per task, selected on 2023 only):
-
-| Evaluation | Reference | Persistence | Frozen ensemble |
-|---|---:|---:|---:|
-| 2024 (test year) | 53.43 / 73.04 | 49.75 / 69.56 | in training data |
-| 2025 full year | 42.60 / 71.12 | 43.92 / 66.33 | 54.88 / 73.44 |
-
-The simple model recovers most of the Task B skill. On Task A it loses to persistence during the multi-day Los
-Angeles wildfire outages of January–February 2025. Those are the events that the frozen ensemble's event features
-and GRU are built for ([docs/TRAINING.md](docs/TRAINING.md#results)).
-
-**Robustness on June–August 2025:**
-
-| Condition | Task A | Task B |
-|---|---:|---:|
-| All inputs | 54.52 | 75.13 |
-| No radar (fallback models) | 53.79 | 74.65 |
-| Only 5 basic weather fields, no radar | 42.27 | 72.86 |
-| Outage records 3 min late, weather runs 4 h late | 49.77 | 72.97 |
-| No outage history at all | 33.04 | 24.72 |
-
-The SQL analysis queries break this down further. The model beats persistence in every county, with the largest
-gain in Wayne County. Task A is over-confident in its top risk bin (predicted 0.98, observed 0.64), and the small
-Los Angeles events are mostly missed ([docs/SQL.md](docs/SQL.md#analysis-queries-sqlanalysis)).
-
-Recent outage history is the most important input. In a three-day test, seven days of history gave the same scores as
-the full history.
-
-## How it works
-
-Every forecast starts from the same core: two predictors, each reading only what was published by the issue time.
-Colours mark the data source (outage records, weather forecasts, radar) and the kind of model.
+Both tasks share one core: a GRU over the last 7 days of outages, and a joint XGBoost feature tree over outage
+history, weather forecasts and radar.
 
 ![Shared core: GRU history network and joint feature tree](docs/assets/diagram-shared-core.png)
 
-**Task A** (48 h, hourly, issued at 00 UTC) blends three members:
+<details>
+<summary><b>Task A</b>: three members, 48 hourly forecasts</summary>
 
 ![Task A: GRU, joint feature tree and Q95 tail member](docs/assets/diagram-task-a.png)
+</details>
 
-**Task B** (6 h, every 5 minutes, issued four times a day) blends two members on the 15-minute grid of the data, then
-holds each value over its interval:
+<details>
+<summary><b>Task B</b>: two members on the 15-minute grid, held to 5-minute outputs</summary>
 
 ![Task B: joint Tweedie tree and GRU on a 15-minute grid](docs/assets/diagram-task-b.png)
+</details>
 
-The diagrams are generated from `docs/diagrams/build_diagrams.py` (HTML sources next to it).
+Features, members and design choices are in [docs/MODEL.md](docs/MODEL.md). The fallback routes are in
+[docs/MISSING_INPUTS.md](docs/MISSING_INPUTS.md).
+
+## Benchmarks
+
+These are local scores with the challenge formula: 100 × (0.75 × normalised AUPRC + 0.25 × (1 − MAE)) on the risk
+scale, pooled over counties, architectures, issues and leads. They are not certified by the organisers. Persistence
+holds the latest observation and is scored on the same cases.
+
+| Model | Data window | Role of the window in development | Task A model / persistence | Task B model / persistence |
+|---|---|---|---:|---:|
+| Frozen ensemble | 2022–2024 | training | — | — |
+| Frozen ensemble | 2025-06 to 2025-08 | member and weight selection | 54.45 / 38.69 | 75.13 / 65.88 |
+| Frozen ensemble | rest of 2025 (9 months) | retrospective, not used for selection¹ | 55.00 / 46.92 | 72.75 / 66.59 |
+| Reference trainer | 2022 fit, 2023 select, 2024 test, 2025 retrospective | from scratch, see [TRAINING.md](docs/TRAINING.md) | re-run pending² | re-run pending² |
+
+¹ January–May 2025 informed one decision: we rejected a fallback-routing change because of its January–May score.
+² The published v1 numbers were affected by a data-loading bug (missing labels read as zeros). The trainer is being
+fixed and re-run.
+
+Scores come from the full-year 2025 inputs, with windows defined by UTC issue time. On the June–August package used by
+`make predict`, truth ends on 31 August, and the same forecasts score 54.52 / 38.82 and 75.13 / 65.88. All
+breakdowns are in [docs/RESULTS.md](docs/RESULTS.md): by lead, county, architecture and month, plus robustness to
+missing or delayed inputs, calibration, and an example storm.
+
+## Usage
+
+| Task | Command |
+|---|---|
+| Forecast an input directory | `python infer.py --input-dir <dir> --output <file.csv>` |
+| Build the SQL warehouse and score a forecast file | `python -m outage_forecast.warehouse build --input-dir <dir> --predictions <file.csv>` |
+| Run an analysis query | `python -m outage_forecast.warehouse query sql/analysis/model_vs_persistence.sql` |
+| Train the reference model | `python scripts/download_artifacts.py training full-2025 && make train` |
+| Demo with a summary page | `make demo` (see [docs/DEMO.md](docs/DEMO.md)) |
+| Rebuild the inputs from public archives | `bash data_pipeline/build_inputs.sh --start 2025-06-01 --end 2025-09-01` (see [docs/DATA.md](docs/DATA.md)) |
+
+Input tables are Parquet or CSV in the layout described in [docs/DATA.md](docs/DATA.md). A forecast file has one row
+per request: `task_id, architecture_id, county_fips, issue_time, target_time, predicted_x, predicted_risk`.
+
+## Testing and CI
+
+On every push, GitHub Actions installs the CPU environment, runs `ruff`, downloads the frozen models and runs
+`pytest` on the 2-day fixture. The tests cover:
+
+- end-to-end inference against recorded predictions;
+- no lookahead: changing later data leaves earlier forecasts bit-identical;
+- input validation;
+- SQL against Python parity for the 30 history features, the labels and the scores;
+- the metric against scikit-learn;
+- the reference trainer's output format.
+
+Two checks need local data and are skipped in CI: full-window parity (June–August 2025) and the reference training run.
+
+## Project structure
+
+```
+src/outage_forecast/   inference package; warehouse.py (SQL runner), reference.py (trainer), metrics.py
+sql/                   bronze/ silver/ gold/ scoring/ analysis/ (DuckDB)
+configs/               runtime configuration: feature schemas, member weights, fallbacks, model SHA-256
+data_pipeline/         builds the input tables from HRRR, MRMS, EAGLE-I and Census polygons
+demo/  notebooks/      demo runner with summary page; notebook front end
+tests/                 pytest suite and 2-day fixture
+docs/                  model, data, SQL, training, results, model card; diagrams/ (generator + HTML)
+```
 
 ## Documentation
 
-| Page | Content |
-|---|---|
-| [Model card](docs/MODEL_CARD.md) | intended use, data, performance, limitations |
-| [Results](docs/RESULTS.md) | all scores: by window, lead, county, architecture and month, plus robustness |
-| [Model](docs/MODEL.md) | features, members, fallbacks, design notes |
-| [Temporal correctness](docs/TEMPORAL_CORRECTNESS.md) | the issue-time rule, replay assumptions, the tests that enforce it |
-| [Missing inputs](docs/MISSING_INPUTS.md) | fallback routes and what each missing input costs |
-| [SQL warehouse](docs/SQL.md) | DuckDB bronze → silver → gold, parity with Python, analysis queries |
-| [Training](docs/TRAINING.md) | reference model trained from scratch, protocol and results |
-| [Data](docs/DATA.md) · [Demo](docs/DEMO.md) | input tables, sources and licences; the demo tool |
-
-## Repository layout
-
-| Path | Content |
-|---|---|
-| `src/outage_forecast/` | inference package: input validation, point-in-time features, model members, blending, output; `warehouse.py` runs the SQL layers; `reference.py` trains and applies the reference model |
-| `sql/` | DuckDB warehouse: `bronze/`, `silver/`, `gold/` layers and `analysis/` queries ([docs/SQL.md](docs/SQL.md)) |
-| `configs/inference.json` | the single runtime configuration: feature schemas, member weights, fallback routes, model SHA-256 |
-| `data_pipeline/` | builds the input tables from public archives (HRRR, MRMS, EAGLE-I, Census polygons) |
-| `demo/` | demo runner, local scorer, request selector, charts; `notebooks/demo.ipynb` is the notebook front end |
-| `tests/` | pytest suite on a 2-day input cut from the 2025 data (`scripts/make_fixture.py`) |
-| `scripts/` | artifact download, fixture and figure builders |
-| `artifacts/` | pinned release assets and their checksums |
+[Model card](docs/MODEL_CARD.md) · [Results](docs/RESULTS.md) · [Model](docs/MODEL.md) ·
+[Temporal correctness](docs/TEMPORAL_CORRECTNESS.md) · [Missing inputs](docs/MISSING_INPUTS.md) ·
+[SQL warehouse](docs/SQL.md) · [Training](docs/TRAINING.md) · [Data](docs/DATA.md) · [Demo](docs/DEMO.md) ·
+[Roadmap](docs/ROADMAP.md)
 
 ## Limitations
 
-- **Replay assumptions.** The archives do not record when each record was published, so an HRRR run counts as
-  available at its run time, an outage record at its observation time and a radar frame 4 minutes after its frame time.
-  Real publication delays lower the scores (see the robustness table above).
-- Only the five counties and the issue grid above are supported. The trees use the weather of 35 neighbouring counties
-  as well.
-- Task B models the 15-minute series; 5-minute detail is not modelled.
-- The frozen ensemble's weights come from the original experiment code, which is not included. The reference trainer
-  (`outage_forecast.reference`) is the reproducible training path, and it is simpler and weaker on Task A.
+- **Replay assumptions.** Publication times are assumed, because the archives do not record them. Delaying outage
+  records by 3 min and weather runs by 4 h lowers the scores to 49.77 / 72.97.
+- **Scope.** Five counties, one evaluation year, and a fixed issue grid. Task B models the 15-minute series and does
+  not resolve 5-minute dynamics.
+- **Training code.** The frozen weights come from experiment code that is not included. The reference trainer is the
+  reproducible training path.
 
-## Background and credits
+## Background, data and licence
 
-This started as my entry to Huawei TechArena 2026 (Topic 2, Challenge 2). This repository is an independent, cleaned-up
-version, and no challenge materials are included. Code and models: [@lishuangyi](https://github.com/lishuangyi).
+This project started as my entry to Huawei TechArena 2026 (Topic 2, Challenge 2). This repository is an independent,
+cleaned-up version, and no challenge materials are included. Code and models are by
+[@lishuangyi](https://github.com/lishuangyi).
 
 Data: EAGLE-I (ORNL, CC BY 4.0), NOAA HRRR and MRMS (public domain), US Census TIGER/Line (public domain). See
-[DATA_LICENSES.csv](DATA_LICENSES.csv). Code licence: [MIT](LICENSE).
+[DATA_LICENSES.csv](DATA_LICENSES.csv). The code is licensed under the [MIT licence](LICENSE).
