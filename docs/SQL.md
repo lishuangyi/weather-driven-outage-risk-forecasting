@@ -12,6 +12,12 @@ python -m outage_forecast.warehouse query sql/analysis/largest_events.sql
 duckdb out/warehouse.duckdb                 # or explore it with the DuckDB CLI
 ```
 
+Building needs no model files; only the metadata in `configs/inference.json` is read. A build is atomic. It writes
+`<db>.building` and replaces the database only after every layer has succeeded. If a quality check with severity
+`error` fails, the build stops before the gold layer, and an existing warehouse is left untouched
+(`tests/test_warehouse.py`). `make sql-smoke` runs the whole chain on the 2-day test fixture, and CI runs it before
+any model is downloaded.
+
 ## Layers
 
 ```

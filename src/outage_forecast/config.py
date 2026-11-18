@@ -20,9 +20,11 @@ class Config:
     raw: dict
 
     @classmethod
-    def load(cls, path: Path = CONFIG_FILE) -> 'Config':
+    def load(cls, path: Path = CONFIG_FILE, verify_models: bool = True) -> 'Config':
+        """The configuration; with verify_models (inference) every model file must be present with its SHA-256.
+        The SQL warehouse, the scorer and the reference trainer only need the metadata (verify_models=False)."""
         config = cls(json.loads(Path(path).read_text(encoding='utf-8')))
-        config.validate()
+        config.validate(verify_models)
         return config
 
     def artifacts(self):
@@ -39,8 +41,8 @@ class Config:
                     yield from walk(value)
         return list(walk({k: self.raw[k] for k in ('task_a', 'task_b')}))
 
-    def validate(self) -> None:
-        """Every referenced feature schema exists and every model file is present with its recorded SHA-256."""
+    def validate(self, verify_models: bool = True) -> None:
+        """Every referenced feature schema exists; with verify_models, every model file is present with its SHA-256."""
         schemas = self.raw['features']
         def references(node):
             if isinstance(node, dict):
@@ -52,6 +54,8 @@ class Config:
         unknown = {r for r in references({k: self.raw[k] for k in ('task_a', 'task_b')}) if r not in schemas}
         if unknown:
             raise RuntimeError(f'inference.json refers to unknown feature schemas {sorted(unknown)}')
+        if not verify_models:
+            return
         for relative, digest in self.artifacts():
             path = self.path(relative)
             if not path.is_file():

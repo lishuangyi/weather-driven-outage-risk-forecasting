@@ -47,7 +47,8 @@ frames AS (
     SELECT i.county, i.issue_s, r.frame_s, r.avail, r.f35, r.f50, r.max_dbz, r.ring35
     FROM issue_points i
     JOIN silver.radar_frames r
-      ON r.county = i.county AND r.available_s <= i.issue_s AND r.frame_s >= i.issue_s - 86400
+      ON r.county = i.county AND r.available_s <= i.issue_s
+     AND r.frame_s <= i.issue_s AND r.frame_s >= i.issue_s - 86400      -- a frame from after T never counts
 )
 SELECT county, issue_s,
        count(*) FILTER (WHERE frame_s >= issue_s - 3600)           AS rx_frames_1h,

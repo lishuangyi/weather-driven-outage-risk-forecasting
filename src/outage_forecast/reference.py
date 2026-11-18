@@ -113,7 +113,7 @@ def fit(train: pl.DataFrame, features: list[str], device: str, rounds: int, vari
 
 def official_score(x_true: np.ndarray, x_pred: np.ndarray) -> float:
     """Challenge score of example-level forecasts, expanded to the four architectures."""
-    risk = Config.load()['risk']
+    risk = Config.load(verify_models=False)['risk']
     x0 = np.array([float(v) for v in risk['x0'].values()])
     sigmoid = lambda x: 1 / (1 + np.exp(-np.clip(risk['k'] * (x[:, None] - x0), -700, 700)))  # noqa: E731
     return task_score(sigmoid(x_true).ravel(), sigmoid(x_pred).ravel())['score']

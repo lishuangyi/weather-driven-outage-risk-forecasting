@@ -19,6 +19,7 @@ that both give the same features, labels and scores.
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import sys
 from pathlib import Path
@@ -102,33 +103,72 @@ def weather_columns(con: duckdb.DuckDBPyConnection) -> str:
     return ',\n       '.join(items)
 
 
-def build(input_dir: Path, db: Path | str = ':memory:', predictions: Path | None = None, lookback_minutes: int = 4320,
-          config: Config | None = None) -> duckdb.DuckDBPyConnection:
-    """Build the warehouse for one input directory and return the open connection."""
-    config = config or Config.load()
-    input_dir = Path(input_dir).resolve()
-    if db != ':memory:':
-        Path(db).parent.mkdir(parents=True, exist_ok=True)
-        Path(db).unlink(missing_ok=True)
-    con = duckdb.connect(str(db), config={'TimeZone': 'UTC'})
+class QualityError(RuntimeError):
+    """A data-quality check with severity 'error' failed; no gold tables were built from the input."""
+
+
+def _connect(path: Path | str) -> duckdb.DuckDBPyConnection:
+    con = duckdb.connect(str(path), config={'TimeZone': 'UTC'})
     con.execute('SET enable_progress_bar = false')
-    for schema in ('ref', 'bronze', 'silver', 'gold'):
-        con.execute(f'CREATE SCHEMA IF NOT EXISTS {schema}')
-    values = {'lookback_minutes': str(int(lookback_minutes))}
-    for table in TABLES:
-        path = locate(input_dir, table)
-        if path is None and table in ('requests', 'mcc'):
-            raise FileNotFoundError(f'{TABLES[table]}.csv or .parquet missing in {input_dir}')
-        values[table] = source(path) if path else f'({EMPTY[table]})'
-    reference_tables(con, config)
-    run_layer(con, 'bronze', values)
-    values['weather_columns'] = weather_columns(con)
-    run_layer(con, 'silver', values)
-    run_layer(con, 'gold', values)
-    if predictions is not None:
-        values['predictions'] = source(Path(predictions).resolve())
-        run_layer(con, 'scoring', values)
     return con
+
+
+def _remove(path: Path) -> None:
+    for p in (path, path.with_name(path.name + '.wal')):
+        p.unlink(missing_ok=True)
+
+
+def build(input_dir: Path, db: Path | str = ':memory:', predictions: Path | None = None, lookback_minutes: int = 4320,
+          config: Config | None = None, on_fail: str = 'raise') -> duckdb.DuckDBPyConnection:
+    """Build the warehouse for one input directory and return the open connection.
+
+    The build is atomic: a file database is written to `<db>.building` and replaces `<db>` only when every layer
+    succeeded, so a failed build never touches an existing warehouse. When a quality check with severity 'error'
+    fails, the build stops before the gold layer and raises QualityError (on_fail='raise'); on_fail='continue' builds
+    everything anyway, for inspecting broken inputs. No model files are needed.
+    """
+    if on_fail not in ('raise', 'continue'):
+        raise ValueError("on_fail must be 'raise' or 'continue'")
+    config = config or Config.load(verify_models=False)
+    input_dir = Path(input_dir).resolve()
+    final = None if str(db) == ':memory:' else Path(db)
+    target: Path | str = ':memory:'
+    if final is not None:
+        final.parent.mkdir(parents=True, exist_ok=True)
+        target = final.with_name(final.name + '.building')
+        _remove(target)
+    con = _connect(target)
+    try:
+        for schema in ('ref', 'bronze', 'silver', 'gold'):
+            con.execute(f'CREATE SCHEMA IF NOT EXISTS {schema}')
+        values = {'lookback_minutes': str(int(lookback_minutes))}
+        for table in TABLES:
+            path = locate(input_dir, table)
+            if path is None and table in ('requests', 'mcc'):
+                raise FileNotFoundError(f'{TABLES[table]}.csv or .parquet missing in {input_dir}')
+            values[table] = source(path) if path else f'({EMPTY[table]})'
+        reference_tables(con, config)
+        run_layer(con, 'bronze', values)
+        values['weather_columns'] = weather_columns(con)
+        run_layer(con, 'silver', values)
+        failed = con.execute("SELECT check_name, violations FROM silver.quality_checks WHERE status = 'FAIL'").fetchall()
+        if failed and on_fail == 'raise':
+            raise QualityError('data-quality checks failed: ' + '; '.join(f'{n} ({v:,} rows)' for n, v in failed))
+        run_layer(con, 'gold', values)
+        if predictions is not None:
+            values['predictions'] = source(Path(predictions).resolve())
+            run_layer(con, 'scoring', values)
+    except BaseException:
+        con.close()
+        if final is not None:
+            _remove(target)
+        raise
+    if final is None:
+        return con
+    con.close()
+    os.replace(target, final)
+    _remove(final.with_name(final.name + '.building'))
+    return _connect(final)
 
 
 def report(con: duckdb.DuckDBPyConnection) -> str:
@@ -170,7 +210,11 @@ def main(argv=None) -> int:
             con.sql(a.sql_file.read_text(encoding='utf-8')).show(max_rows=60, max_width=160)
         return 0
     if a.command == 'build':
-        con = build(a.input_dir, a.db, a.predictions, a.lookback_minutes)
+        try:
+            con = build(a.input_dir, a.db, a.predictions, a.lookback_minutes)
+        except QualityError as error:
+            print(f'Build stopped, {a.db} left unchanged: {error}', file=sys.stderr)
+            return 1
     else:
         con = duckdb.connect(str(a.db), read_only=True, config={'TimeZone': 'UTC'})
     print(report(con))

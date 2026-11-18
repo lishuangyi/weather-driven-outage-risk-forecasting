@@ -37,7 +37,7 @@ any delays it is given and never uses data early. It does not try to compensate 
 | `features/weather.py` `select_weather` | filters candidate runs on `availability ≤ T` and `model_run ≤ T` before choosing one |
 | `features/radar.py` | uses only frames with `availability ≤ T` in the 24 h window |
 | `sql/gold/01_visible_history.sql` | the same rule in SQL, followed by `QUALIFY row_number()` for versions |
-| `sql/gold/04_context_features.sql` | weather and radar as of T in SQL (`run_s ≤ T AND available_s ≤ T`) |
+| `sql/gold/04_context_features.sql` | weather and radar as of T in SQL (weather: `run_s ≤ T AND available_s ≤ T`; radar: `frame_s ≤ T AND available_s ≤ T`) |
 
 ## Tests that would catch a violation
 
@@ -45,6 +45,8 @@ any delays it is given and never uses data early. It does not try to compensate 
 |---|---|
 | `tests/test_no_lookahead.py` | Every record published after a cut-off (outages, weather runs, radar frames) is replaced by an extreme value. Forecasts issued at or before the cut-off must stay **bit-identical**, and later forecasts must change, which shows that the perturbation reaches the model. |
 | `tests/test_sql_parity.py::test_sql_features_ignore_future_data` | the same perturbation for the 30 SQL history features |
+| `tests/test_warehouse.py::test_context_features_ignore_data_published_after_the_issue` | the same for the SQL weather and radar features, one source at a time, each with a positive control on later issues |
+| `tests/test_warehouse.py::test_radar_frame_from_after_the_issue_is_ignored` | a malformed radar frame dated after the issue but marked available before it is not used |
 | `tests/test_sql_parity.py::test_history_features_match_python` | the SQL and Python point-in-time features agree on every issue, so they would have to be wrong in the same way |
 
 ## Time in model development

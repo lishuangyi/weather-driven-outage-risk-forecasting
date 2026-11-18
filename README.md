@@ -105,15 +105,20 @@ per request: `task_id, architecture_id, county_fips, issue_time, target_time, pr
 
 ## Testing and CI
 
-On every push, GitHub Actions installs the CPU environment, runs `ruff`, downloads the frozen models and runs
-`pytest` on the 2-day fixture. The tests cover:
+On every push, GitHub Actions installs the CPU environment and runs these steps:
 
-- end-to-end inference against recorded predictions;
-- no lookahead: changing later data leaves earlier forecasts bit-identical;
-- input validation;
-- SQL against Python parity for the 30 history features, the labels and the scores;
-- the metric against scikit-learn;
-- the reference trainer's output format.
+1. `ruff`.
+2. `make sql-smoke`: builds the DuckDB warehouse on the 2-day fixture and scores the recorded predictions, with no
+   model files present.
+3. Downloads the frozen models.
+4. `pytest` on the fixture. The tests cover:
+   - end-to-end inference against recorded predictions;
+   - no lookahead: later data leaves earlier forecasts and the SQL history, weather and radar features unchanged;
+   - input validation;
+   - atomic warehouse builds with a quality gate;
+   - SQL against Python parity for the 30 history features, the labels and the scores;
+   - the metric against scikit-learn;
+   - the reference trainer's NULL handling, purging and output format.
 
 Two checks need local data and are skipped in CI: full-window parity (June–August 2025) and the reference training run.
 

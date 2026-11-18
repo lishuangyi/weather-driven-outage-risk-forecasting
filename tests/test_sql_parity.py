@@ -33,7 +33,7 @@ def warehouse(predictions_csv):
 
 def python_history(input_dir: Path, issues: pl.DataFrame) -> dict:
     """{(task, county, issue_s): {feature: value}} from the Python feature code."""
-    config = Config.load()
+    config = Config.load(verify_models=False)
     outages = model_outage_view(read_outages(input_dir))
     history = OutageHistory(outages)
     mcc = read_mcc(input_dir, config, set(issues['county'].unique().to_list()))
@@ -65,7 +65,7 @@ def test_history_features_match_python(warehouse):
 def test_labels_match_scorer(warehouse, predictions_csv):
     import scoring
 
-    joined = scoring.frames(predictions_csv, FIXTURE, Config.load())
+    joined = scoring.frames(predictions_csv, FIXTURE, Config.load(verify_models=False))
     sql = to_polars(warehouse.sql('SELECT task, arch, county, issue_s, target_s, truth_x FROM gold.labels'))
     for task in ('A', 'B'):
         py = joined[task].select('task', 'arch', 'county', pl.col('issue').alias('issue_s'), pl.col('target').alias('target_s'), 'truth')
@@ -80,7 +80,7 @@ def test_labels_match_scorer(warehouse, predictions_csv):
 def compare_scores(con, predictions: Path, input_dir: Path):
     import scoring
 
-    py = scoring.score(predictions, input_dir, Config.load())
+    py = scoring.score(predictions, input_dir, Config.load(verify_models=False))
     metrics = {(t, d, g): s for t, d, g, s in con.execute(
         "SELECT task, dimension, grp, score FROM gold.metrics WHERE model = 'model'").fetchall()}
     for task, entry in py['tasks'].items():
@@ -113,7 +113,7 @@ def test_quality_checks_catch_broken_input(fixture_copy):
     o = pl.read_parquet(path)
     o.with_columns(pl.when(pl.int_range(pl.len()) < 2).then(pl.col('timestamp') - pl.duration(hours=1))
                    .otherwise(pl.col('source_record_time')).alias('source_record_time')).write_parquet(path)  # published early
-    con = build(fixture_copy)
+    con = build(fixture_copy, on_fail='continue')
     failed = dict(con.execute("SELECT check_name, violations FROM silver.quality_checks WHERE status = 'FAIL'").fetchall())
     assert failed == {'requests: duplicate request key': 3,
                       'outages: published before observed (source_record_time < timestamp)': 2}
