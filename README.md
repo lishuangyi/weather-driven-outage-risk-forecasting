@@ -88,7 +88,19 @@ frozen ensemble's event features and GRU are built for exactly such events.
 Scores come from the full-year 2025 inputs, with windows defined by UTC issue time. On the June–August package used by
 `make predict`, truth ends on 31 August, and the same forecasts score 54.52 / 38.82 and 75.13 / 65.88. All
 breakdowns are in [docs/RESULTS.md](docs/RESULTS.md): by lead, county, architecture and month, plus robustness to
-missing or delayed inputs, calibration, and an example storm.
+missing or delayed inputs, calibration, coverage, uncertainty, and an example storm.
+
+**Uncertainty.** We use a paired bootstrap over blocks of 7 issue days, with the analysis fixed in code before it was
+run. On 2025 the frozen ensemble beats persistence:
+
+| | Score difference vs persistence, 95 % CI |
+|---|---|
+| Frozen ensemble, Task A | +11.0 [+5.6, +16.1] |
+| Frozen ensemble, Task B | +7.1 [+5.2, +9.0] |
+| Reference model, Task B | +2.5 [+1.8, +3.5] |
+| Reference model, Task A | +0.4 [−3.4, +4.0] |
+
+The reference model's Task A interval includes zero, so it cannot be told apart from persistence.
 
 ## Usage
 
@@ -98,6 +110,7 @@ missing or delayed inputs, calibration, and an example storm.
 | Build the SQL warehouse and score a forecast file | `python -m outage_forecast.warehouse build --input-dir <dir> --predictions <file.csv>` |
 | Run an analysis query | `python -m outage_forecast.warehouse query sql/analysis/model_vs_persistence.sql` |
 | Train the reference model | `python scripts/download_artifacts.py training full-2025 && make train` |
+| Confidence interval vs persistence | `python -m outage_forecast.evaluation --input-dir <dir> --predictions <file.csv>` |
 | Demo with a summary page | `make demo` (see [docs/DEMO.md](docs/DEMO.md)) |
 | Rebuild the inputs from public archives | `bash data_pipeline/build_inputs.sh --start 2025-06-01 --end 2025-09-01` (see [docs/DATA.md](docs/DATA.md)) |
 

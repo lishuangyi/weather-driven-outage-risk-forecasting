@@ -49,7 +49,8 @@ baseline.
 | June–August 2025 (selection window) | 54.45 (persistence 38.69) | 75.13 (65.88) |
 | other 9 months of 2025 (retrospective) | 55.00 (46.92) | 72.75 (66.59) |
 
-Performance varies more across periods and counties than between models. A county and period with many events
+On 2025 the gain over persistence is clear: score difference A +11.0 [5.6, 16.1] and B +7.1 [5.2, 9.0] (paired
+block-bootstrap 95 % intervals). Performance varies more across periods and counties than between models. A county and period with many events
 scores 70–90, while a quiet one scores 25–40. The lead also matters: Task A falls from 78 (1–6 h) to 45 (25–48 h).
 
 ## Limitations and risks

@@ -1,0 +1,114 @@
+{
+  "model": "reference model v2",
+  "predictions": "reference_2025_full.csv",
+  "scope": null,
+  "primary": {
+    "task": "A",
+    "statistic": "risk MAE difference",
+    "block_days": 7,
+    "reps": 2000,
+    "seed": 0
+  },
+  "tasks": {
+    "A": {
+      "issue_days": 365,
+      "cases": 294092,
+      "mae_model": 0.12418915918741673,
+      "mae_persistence": 0.12165620759782902,
+      "mae_difference": {
+        "7-day blocks": {
+          "estimate": 0.0025329515895876967,
+          "ci95": [
+            -0.006644504923356153,
+            0.01332670755812343
+          ],
+          "bootstrap_sd": 0.005151559831008213,
+          "excludes_zero": false,
+          "reps": 2000
+        },
+        "3-day blocks": {
+          "estimate": 0.0025329515895876967,
+          "ci95": [
+            -0.004574894556917036,
+            0.010748042144391404
+          ],
+          "bootstrap_sd": 0.003895178397352231,
+          "excludes_zero": false,
+          "reps": 2000
+        },
+        "14-day blocks": {
+          "estimate": 0.0025329515895876967,
+          "ci95": [
+            -0.008364946489862263,
+            0.01658143486319353
+          ],
+          "bootstrap_sd": 0.00650831103294311,
+          "excludes_zero": false,
+          "reps": 2000
+        }
+      },
+      "score_difference": {
+        "7-day blocks": {
+          "estimate": 0.3789675903076528,
+          "ci95": [
+            -3.435491961459479,
+            3.947119728566711
+          ],
+          "bootstrap_sd": 1.9701425111626705,
+          "excludes_zero": false,
+          "reps": 1000
+        }
+      }
+    },
+    "B": {
+      "issue_days": 365,
+      "cases": 1809572,
+      "mae_model": 0.07418712168717637,
+      "mae_persistence": 0.0783407666191137,
+      "mae_difference": {
+        "7-day blocks": {
+          "estimate": -0.004153644931937313,
+          "ci95": [
+            -0.00623846786622288,
+            -0.0022846346507457635
+          ],
+          "bootstrap_sd": 0.0010205525504359424,
+          "excludes_zero": true,
+          "reps": 2000
+        },
+        "3-day blocks": {
+          "estimate": -0.004153644931937313,
+          "ci95": [
+            -0.0058884432841678,
+            -0.0024917114665513797
+          ],
+          "bootstrap_sd": 0.0008594296407633591,
+          "excludes_zero": true,
+          "reps": 2000
+        },
+        "14-day blocks": {
+          "estimate": -0.004153644931937313,
+          "ci95": [
+            -0.0068162055712185105,
+            -0.0019520933599656849
+          ],
+          "bootstrap_sd": 0.0012437000283097863,
+          "excludes_zero": true,
+          "reps": 2000
+        }
+      },
+      "score_difference": {
+        "7-day blocks": {
+          "estimate": 2.539335050839611,
+          "ci95": [
+            1.7947606054243006,
+            3.4535143202281455
+          ],
+          "bootstrap_sd": 0.4235035892822929,
+          "excludes_zero": true,
+          "reps": 1000
+        }
+      }
+    }
+  }
+}

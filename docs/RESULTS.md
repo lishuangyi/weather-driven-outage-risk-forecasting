@@ -130,3 +130,37 @@ without truth are excluded and counted (`sql/analysis/coverage.sql`; rules in [S
 No case is excluded for invalid truth. Coverage depends on the outage feed: Rockingham's EAGLE-I series has long
 gaps, which also explains its stale history at issue time (`sql/analysis/data_freshness.sql`). For June–August
 2025, 86.1 % (A) and 88.4 % (B) of the requests are scored.
+
+## 9. Uncertainty: paired block bootstrap
+
+The question is whether the gain over persistence holds beyond the particular days of 2025. The analysis was fixed
+in code before it was run (`outage_forecast.evaluation`, commit `5872df1`; the results are in a later commit):
+
+- **Primary statistic.** Task A risk MAE of the model minus that of persistence, on the 2025 scoring cohort.
+  Negative means the model is better.
+- **Resampling.** Moving blocks of 7 consecutive UTC issue days. All counties, architectures and leads of a day stay
+  together, and the model and persistence always see the same cases. 2,000 resamples with seed 0, and a 95 %
+  percentile interval.
+- **Sensitivity.** 3- and 14-day blocks.
+- **Secondary statistic.** The full challenge score (model minus persistence), recomputed in every resample, because
+  AUPRC cannot be split into per-case losses. 7-day blocks and 1,000 resamples.
+
+| 2025, 365 issue days | Cases | Risk MAE, model / persistence | MAE difference, 95 % CI | Score difference, 95 % CI |
+|---|---:|---|---|---|
+| **Frozen ensemble, Task A** (primary) | 294,092 | 0.104 / 0.122 | **−0.018 [−0.028, −0.007]** | +11.0 [+5.6, +16.1] |
+| Frozen ensemble, Task B | 1,809,572 | 0.067 / 0.078 | −0.012 [−0.015, −0.008] | +7.1 [+5.2, +9.0] |
+| Reference model, Task A | 294,092 | 0.124 / 0.122 | +0.003 [−0.007, +0.013] | +0.4 [−3.4, +4.0] |
+| Reference model, Task B | 1,809,572 | 0.074 / 0.078 | −0.004 [−0.006, −0.002] | +2.5 [+1.8, +3.5] |
+
+With 3- and 14-day blocks, the MAE intervals of every row keep the same sign as with 7-day blocks.
+
+- **Frozen ensemble.** Both tasks beat persistence; neither interval comes close to zero. The Task A risk error is
+  about 15 % lower.
+- **Reference model, Task B.** It also beats persistence.
+- **Reference model, Task A.** It cannot be told apart from persistence. Its interval includes zero for both
+  statistics, so the small positive score difference in [TRAINING.md](TRAINING.md) is not evidence of skill.
+
+**What the intervals do not cover.** They describe sampling variation across days within 2025. They do not cover
+differences between years, counties or data sources. For the frozen ensemble, June–August 2025 was also its selection
+window. The full results, including the bootstrap standard deviations, are in
+`artifacts/evaluation/bootstrap_2025_*.json`.
