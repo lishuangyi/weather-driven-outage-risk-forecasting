@@ -222,7 +222,8 @@ Two questions that the challenge score does not answer:
 - How often does an alert come before a new outage, at a rate someone could act on?
 
 Both analyses were fixed in code before they were run (`outage_forecast.calibration` and `outage_forecast.alerts`,
-`PROTOCOL` in each module; the results are in a later commit). Both use the frozen ensemble's predictions for the full
+`PROTOCOL` in each module, commit `2ac2870`; the results are in a later commit). `make calibration alerts` reruns
+them; the tables below are generated from the run report. Both use the frozen ensemble's predictions for the full
 year 2025. Their parameters are fitted on June–August 2025, which also selected the ensemble, and they are evaluated
 on September–December 2025. This is a chronological replay, not an untouched test.
 
@@ -257,4 +258,96 @@ probability (section 6).
 - **Secondary.** The same against the gust score, precision, 8 alerts per 30 days, and 14-day blocks.
 - **Large outages (0.5 %).** Counts only; they are too few for intervals.
 
-Results: in the next commit.
+### Results: event probability
+
+<!-- run-report:calibration -->
+| Sep–Dec 2025 | Cases | Event rate, fit → evaluation | Brier, challenge risk / p_event | Brier difference, 95 % CI | Log loss, challenge risk / p_event | Log-loss difference, 95 % CI |
+|---|---:|---|---|---|---|---|
+| Task A | 97,768 | 13.0 % → 6.1 % | 0.0580 / 0.0514 | −0.0066 [−0.0096, −0.0033] | 0.265 / 0.201 | −0.064 [−0.105, −0.026] |
+| Task B | 603,664 | 12.8 % → 6.2 % | 0.0435 / 0.0436 | +0.0000 [−0.0006, +0.0008] | 0.181 / 0.172 | −0.009 [−0.014, −0.001] |
+
+Fitted maps: Task A: p_event = sigmoid(−1.022 + 0.840 · asinh(4000 (x̂ − x₀))); Task B: p_event = sigmoid(−0.594 + 1.200 · asinh(4000 (x̂ − x₀))). With 14-day blocks the Brier intervals reach the same conclusions.
+<!-- /run-report:calibration -->
+
+- **Task A.** `p_event` is better than the challenge risk on both scores. The Brier score is 11 % lower and the
+  interval excludes zero. The challenge risk's top bin promises 0.98 where 0.52 are events; `p_event` reaches 0.92
+  only for 136 cases, of which 0.76 are events.
+- **Task B.** No gain on the primary statistic: the Brier interval includes zero, and log loss improves only slightly.
+  Below 0.6 the challenge risk of Task B was already close to calibrated. Between 0.1 and 0.5 `p_event` predicts too
+  little (0.24 → 0.44).
+- **Season.** The event rate fell from 13 % in the fit months to 6 % in September–December. A map fitted in summer
+  keeps the summer base rate, so Task A stays over-confident between 0.5 and 0.9 (0.84 → 0.55). Using it for
+  decisions would need a map refitted as new truth arrives; that was not tested here.
+- **Ranking.** The map increases with the forecast margin. It leaves the ranking of the cases unchanged, apart from
+  ties where the challenge risk saturates at 1, and the challenge output is not changed.
+
+Reliability in September–December: mean predicted → observed event rate (cases), per bin of the forecast.
+
+<!-- run-report:reliability -->
+| Predicted | Task A challenge risk | Task A p_event | Task B challenge risk | Task B p_event |
+|---|---|---|---|---|
+| 0.0–0.1 | 0.03 → 0.04 (85,270) | 0.06 → 0.04 (87,928) | 0.02 → 0.03 (548,258) | 0.04 → 0.03 (563,046) |
+| 0.1–0.2 | 0.14 → 0.11 (5,383) | 0.13 → 0.15 (5,177) | 0.14 → 0.15 (22,717) | 0.13 → 0.23 (16,844) |
+| 0.2–0.3 | 0.24 → 0.17 (1,681) | 0.24 → 0.23 (803) | 0.24 → 0.26 (7,477) | 0.24 → 0.44 (3,886) |
+| 0.3–0.4 | 0.34 → 0.22 (821) | 0.35 → 0.25 (516) | 0.35 → 0.41 (4,047) | 0.35 → 0.45 (2,153) |
+| 0.4–0.5 | 0.45 → 0.23 (514) | 0.45 → 0.32 (482) | 0.45 → 0.44 (2,572) | 0.45 → 0.55 (1,821) |
+| 0.5–0.6 | 0.55 → 0.24 (430) | 0.55 → 0.40 (533) | 0.55 → 0.53 (2,181) | 0.55 → 0.55 (1,915) |
+| 0.6–0.7 | 0.65 → 0.24 (362) | 0.65 → 0.50 (673) | 0.65 → 0.54 (2,020) | 0.65 → 0.60 (2,201) |
+| 0.7–0.8 | 0.75 → 0.32 (345) | 0.75 → 0.49 (825) | 0.75 → 0.60 (2,178) | 0.75 → 0.56 (2,602) |
+| 0.8–0.9 | 0.85 → 0.39 (440) | 0.84 → 0.55 (695) | 0.85 → 0.58 (2,332) | 0.85 → 0.69 (2,911) |
+| 0.9–1.0 | 0.98 → 0.52 (2,522) | 0.92 → 0.76 (136) | 0.98 → 0.77 (9,882) | 0.96 → 0.83 (6,285) |
+<!-- /run-report:reliability -->
+
+### Results: alert budget
+
+<!-- run-report:alerts -->
+| Budget (per county, 30 days) | Score | Alerts issued (per county, 30 days) | Hits / verified alerts | Precision | Matched / onsets | Recall | Median lead |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 4 | model (max predicted share) | 54 (2.7) | 33 / 50 | 66 % | 33 / 209 | 16 % | 15 h |
+| 4 | near-threshold persistence | 55 (2.7) | 24 / 49 | 49 % | 24 / 209 | 11 % | 15 h |
+| 4 | max HRRR gust | 101 (5.0) | 42 / 92 | 46 % | 42 / 209 | 20 % | 16 h |
+| 8 | model (max predicted share) | 103 (5.1) | 51 / 95 | 54 % | 51 / 209 | 24 % | 15 h |
+| 8 | near-threshold persistence | 107 (5.3) | 49 / 97 | 51 % | 49 / 209 | 23 % | 15 h |
+| 8 | max HRRR gust | 151 (7.4) | 62 / 140 | 44 % | 62 / 209 | 30 % | 16 h |
+
+| Budget | Statistic | Model − persistence, 95 % CI | Model − gust, 95 % CI |
+|---|---|---|---|
+| 4 | **recall** (primary) | **+4.3 [−0.5, +8.8] pt** | −4.3 [−9.2, +0.4] pt |
+| 4 | precision | +17.0 [+6.4, +35.5] pt | +20.3 [+10.5, +37.6] pt |
+| 8 | recall | +1.0 [−5.3, +6.5] pt | −5.3 [−10.5, −0.4] pt |
+| 8 | precision | +3.2 [−5.2, +13.6] pt | +9.4 [+1.3, +19.6] pt |
+
+Large outages (0.5 %): 20 onsets in September–December; an alert at 4 per 30 days came before 4 (model), 2 (persistence) and 5 (gust) of them.
+<!-- /run-report:alerts -->
+
+<!-- run-report:alerts-by-county -->
+| County (budget 4) | Onsets in verified windows | Matched: model / persistence / gust | Alerts: model / persistence / gust | Quiet issues (eligible) |
+|---|---:|---|---|---:|
+| Wayne, MI | 40 | 8 / 5 / 15 | 9 / 9 / 47 | 99 of 122 |
+| Harris, TX | 87 | 7 / 7 / 9 | 8 / 9 / 11 | 72 of 122 |
+| Rockingham, NH | 0 | 0 / 0 / 0 | 2 / 2 / 2 | 2 of 122 |
+| Los Angeles, CA | 44 | 10 / 4 / 13 | 20 / 18 / 32 | 92 of 122 |
+| Miami-Dade, FL | 38 | 8 / 8 / 5 | 15 / 17 / 9 | 101 of 122 |
+<!-- /run-report:alerts-by-county -->
+
+- **Primary statistic.** At 4 alerts per county per 30 days, the model's recall is 4.3 points above near-threshold
+  persistence. The interval includes zero, so the model does not find clearly more new outages.
+- **Precision.** At the same budget, the model's alerts are right more often: 66 % against 49 % for persistence and
+  46 % for the gust score. Both intervals exclude zero. At 8 alerts the gain over persistence is no longer
+  distinguishable from zero, while the gain over the gust score remains.
+- **Budgets do not carry over between seasons.** The cutoffs were fitted on summer scores. In September–December
+  the model and persistence issued fewer alerts than budgeted (2.7 per 30 days instead of 4). The gust score issued
+  more (5.0), because autumn is windier: in Wayne County it alerted on 47 of 122 days. Part of the gust score's higher
+  recall therefore comes from issuing nearly twice as many alerts as the model, and precision is the fairer
+  comparison here. An operational rule would refit its cutoff as the season changes.
+- **Recall is low for every score (11–30 %).**
+  - The budget is small compared with the number of onsets: Harris has 87 in four months.
+  - 40 % of the issues abstain because the county was not quiet at T.
+  - Rockingham's outage feed has so many gaps that only 2 of its 122 issues were eligible, and it has no onset in a
+    verified window.
+- **Large outages.** 20 large-outage onsets (0.5 %) are too few for intervals. 11 of them fall on days when the
+  county was not quiet at the issue time, so the rule abstained.
+
+In short, at a fixed alert budget the model's advantage is fewer false alarms, not more outages found in advance.
+This supports the observation in the model card that much of the benchmark skill comes from tracking outages that
+are already under way.

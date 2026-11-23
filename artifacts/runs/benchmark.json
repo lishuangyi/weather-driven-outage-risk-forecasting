@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "generated_at": "2026-11-23T12:15:03+00:00",
+  "generated_at": "2026-11-23T13:26:07+00:00",
   "spec": {
     "path": "configs/benchmark.json",
-    "sha256": "f270e90480990102fd45e0f39545d9e1b58b2bedd2751b272b324892518a6944"
+    "sha256": "910bdc5ca481e472d54141caf8ec7b78ad952b33741ac0fca664fa51695a6f89"
   },
   "code": {
-    "commit": "fc1a2b9825c295340afd9f6cf333c9846f112cc8",
-    "describe": "fc1a2b9",
+    "commit": "c0b5643208022fd1c66f3b959b1ebdeab5f5c937",
+    "describe": "c0b5643",
     "uncommitted_changes": []
   },
   "environment": {
@@ -263,17 +263,17 @@
             "cases": 76004,
             "positives": 9832,
             "positive_rate": 0.12936161254670805,
-            "auprc_norm": 0.43712397662416863,
-            "mae_risk": 0.13346990932107486,
-            "score": 54.44755051378578
+            "auprc_norm": 0.43712397662416785,
+            "mae_risk": 0.13346990932107483,
+            "score": 54.447550513785714
           },
           "persistence": {
             "cases": 76004,
             "positives": 9832,
             "positive_rate": 0.12936161254670805,
             "auprc_norm": 0.23607234559076448,
-            "mae_risk": 0.16061647601463733,
-            "score": 38.6900140189414
+            "mae_risk": 0.1606164760146372,
+            "score": 38.69001401894141
           },
           "coverage": {
             "requested": 88320,
@@ -319,16 +319,16 @@
             "cases": 468552,
             "positives": 60044,
             "positive_rate": 0.12814799638033772,
-            "auprc_norm": 0.6960338177935426,
-            "mae_risk": 0.08273269533104523,
-            "score": 75.13421895123956
+            "auprc_norm": 0.6960338177935412,
+            "mae_risk": 0.08273269533104535,
+            "score": 75.13421895123946
           },
           "persistence": {
             "cases": 468552,
             "positives": 60044,
             "positive_rate": 0.12814799638033772,
             "auprc_norm": 0.5783881775940013,
-            "mae_risk": 0.10005628330844211,
+            "mae_risk": 0.10005628330844181,
             "score": 65.87770623683905
           },
           "coverage": {
@@ -417,17 +417,17 @@
             "cases": 218088,
             "positives": 19461,
             "positive_rate": 0.0892346208869814,
-            "auprc_norm": 0.43098668086032,
-            "mae_risk": 0.09315508857829399,
-            "score": 54.995123850066655
+            "auprc_norm": 0.43098668086032027,
+            "mae_risk": 0.09315508857829409,
+            "score": 54.99512385006666
           },
           "persistence": {
             "cases": 218088,
             "positives": 19461,
             "positive_rate": 0.0892346208869814,
             "auprc_norm": 0.3282750426440754,
-            "mae_risk": 0.10807849474452648,
-            "score": 46.91866582969249
+            "mae_risk": 0.10807849474452684,
+            "score": 46.918665829692486
           },
           "coverage": {
             "requested": 262080,
@@ -473,8 +473,8 @@
             "cases": 1341020,
             "positives": 118990,
             "positive_rate": 0.08873096598111885,
-            "auprc_norm": 0.6571296485971743,
-            "mae_risk": 0.06129567592844173,
+            "auprc_norm": 0.6571296485971744,
+            "mae_risk": 0.061295675928442185,
             "score": 72.75233174657703
           },
           "persistence": {
@@ -482,8 +482,8 @@
             "positives": 118990,
             "positive_rate": 0.08873096598111885,
             "auprc_norm": 0.5781156727902836,
-            "mae_risk": 0.07075337137085574,
-            "score": 66.58984117499989
+            "mae_risk": 0.07075337137085616,
+            "score": 66.58984117499986
           },
           "coverage": {
             "requested": 1572480,
@@ -567,17 +567,17 @@
             "cases": 294092,
             "positives": 29293,
             "positive_rate": 0.09960488554601961,
-            "auprc_norm": 0.4329284660413409,
-            "mae_risk": 0.10357389505971584,
-            "score": 54.88028757660768
+            "auprc_norm": 0.4329284660413408,
+            "mae_risk": 0.10357389505971608,
+            "score": 54.88028757660766
           },
           "persistence": {
             "cases": 294092,
             "positives": 29293,
             "positive_rate": 0.09960488554601961,
             "auprc_norm": 0.2928436933228561,
-            "mae_risk": 0.12165620759782943,
-            "score": 43.92187180926847
+            "mae_risk": 0.12165620759782911,
+            "score": 43.921871809268474
           },
           "coverage": {
             "requested": 350400,
@@ -624,7 +624,7 @@
             "positives": 179034,
             "positive_rate": 0.09893720725121742,
             "auprc_norm": 0.668196439025381,
-            "mae_risk": 0.0668463577002251,
+            "mae_risk": 0.06684635770022561,
             "score": 73.44357398439794
           },
           "persistence": {
@@ -632,8 +632,8 @@
             "positives": 179034,
             "positive_rate": 0.09893720725121742,
             "auprc_norm": 0.5771424493184754,
-            "mae_risk": 0.07834076661911461,
-            "score": 66.3271645334078
+            "mae_risk": 0.07834076661911508,
+            "score": 66.32716453340778
           },
           "coverage": {
             "requested": 2102400,
@@ -717,16 +717,16 @@
             "cases": 294092,
             "positives": 29293,
             "positive_rate": 0.09960488554601961,
-            "auprc_norm": 0.2987409117234867,
-            "mae_risk": 0.12418915918741698,
-            "score": 44.30083939957608
+            "auprc_norm": 0.2987409117234855,
+            "mae_risk": 0.12418915918741658,
+            "score": 44.300839399576
           },
           "persistence": {
             "cases": 294092,
             "positives": 29293,
             "positive_rate": 0.09960488554601961,
             "auprc_norm": 0.2928436933228561,
-            "mae_risk": 0.12165620759782923,
+            "mae_risk": 0.12165620759782918,
             "score": 43.921871809268474
           },
           "coverage": {
@@ -773,17 +773,17 @@
             "cases": 1809572,
             "positives": 179034,
             "positive_rate": 0.09893720725121742,
-            "auprc_norm": 0.6096157016856883,
-            "mae_risk": 0.07418712168717656,
-            "score": 68.86649958424721
+            "auprc_norm": 0.6096157016856882,
+            "mae_risk": 0.07418712168717594,
+            "score": 68.86649958424722
           },
           "persistence": {
             "cases": 1809572,
             "positives": 179034,
             "positive_rate": 0.09893720725121742,
             "auprc_norm": 0.5771424493184755,
-            "mae_risk": 0.07834076661911507,
-            "score": 66.32716453340778
+            "mae_risk": 0.07834076661911434,
+            "score": 66.3271645334078
           },
           "coverage": {
             "requested": 2102400,
@@ -867,16 +867,16 @@
             "cases": 76004,
             "positives": 9832,
             "positive_rate": 0.12936161254670805,
-            "auprc_norm": 0.28641164043461087,
+            "auprc_norm": 0.28641164043460954,
             "mae_risk": 0.15425639842383237,
-            "score": 42.624463072000005
+            "score": 42.624463071999905
           },
           "persistence": {
             "cases": 76004,
             "positives": 9832,
             "positive_rate": 0.12936161254670805,
             "auprc_norm": 0.23607234559076448,
-            "mae_risk": 0.16061647601463716,
+            "mae_risk": 0.160616476014637,
             "score": 38.69001401894141
           },
           "coverage": {
@@ -923,17 +923,17 @@
             "cases": 468552,
             "positives": 60044,
             "positive_rate": 0.12814799638033772,
-            "auprc_norm": 0.6197292867824503,
-            "mae_risk": 0.09148126985263824,
-            "score": 69.19266476236781
+            "auprc_norm": 0.6197292867824523,
+            "mae_risk": 0.09148126985263792,
+            "score": 69.19266476236797
           },
           "persistence": {
             "cases": 468552,
             "positives": 60044,
             "positive_rate": 0.12814799638033772,
             "auprc_norm": 0.5783881775940012,
-            "mae_risk": 0.1000562833084419,
-            "score": 65.87770623683905
+            "mae_risk": 0.10005628330844236,
+            "score": 65.87770623683903
           },
           "coverage": {
             "requested": 529920,
@@ -1013,7 +1013,7 @@
             "positives": 9804,
             "positive_rate": 0.12975806024670444,
             "auprc_norm": 0.43816488011718974,
-            "mae_risk": 0.13361792493542557,
+            "mae_risk": 0.13361792493542549,
             "score": 54.521917885403596
           },
           "persistence": {
@@ -1021,8 +1021,8 @@
             "positives": 9804,
             "positive_rate": 0.12975806024670444,
             "auprc_norm": 0.23760590061150574,
-            "mae_risk": 0.15993233497803708,
-            "score": 38.822134171412
+            "mae_risk": 0.15993233497803683,
+            "score": 38.82213417141201
           },
           "coverage": {
             "requested": 88320,
@@ -1068,17 +1068,17 @@
             "cases": 468532,
             "positives": 60042,
             "positive_rate": 0.12814919792031282,
-            "auprc_norm": 0.6960401232730867,
-            "mae_risk": 0.08273257693762295,
-            "score": 75.13469482204093
+            "auprc_norm": 0.696040123273086,
+            "mae_risk": 0.0827325769376221,
+            "score": 75.1346948220409
           },
           "persistence": {
             "cases": 468532,
             "positives": 60042,
             "positive_rate": 0.12814919792031282,
             "auprc_norm": 0.5784010585649271,
-            "mae_risk": 0.10005328900124094,
-            "score": 65.8787471673385
+            "mae_risk": 0.10005328900124259,
+            "score": 65.87874716733847
           },
           "coverage": {
             "requested": 529920,
@@ -1162,17 +1162,17 @@
             "cases": 301372,
             "positives": 25742,
             "positive_rate": 0.08541603068632786,
-            "auprc_norm": 0.4396585879904393,
-            "mae_risk": 0.11840040556749294,
-            "score": 55.014383960095614
+            "auprc_norm": 0.4396585879904392,
+            "mae_risk": 0.11840040556749258,
+            "score": 55.014383960095635
           },
           "persistence": {
             "cases": 301372,
             "positives": 25742,
             "positive_rate": 0.08541603068632786,
             "auprc_norm": 0.37081163479696644,
-            "mae_risk": 0.12238285593469543,
-            "score": 49.7513012114051
+            "mae_risk": 0.12238285593469582,
+            "score": 49.75130121140509
           },
           "coverage": {
             "requested": 351360,
@@ -1218,16 +1218,16 @@
             "cases": 1851524,
             "positives": 157677,
             "positive_rate": 0.08516065684268743,
-            "auprc_norm": 0.6558435676065966,
-            "mae_risk": 0.06604939954985979,
-            "score": 72.53703258174825
+            "auprc_norm": 0.655843567606596,
+            "mae_risk": 0.06604939954986071,
+            "score": 72.53703258174818
           },
           "persistence": {
             "cases": 1851524,
             "positives": 157677,
             "positive_rate": 0.08516065684268743,
             "auprc_norm": 0.617339825573669,
-            "mae_risk": 0.06965911905999166,
+            "mae_risk": 0.0696591190599917,
             "score": 69.55900894152538
           },
           "coverage": {
@@ -1282,5 +1282,17 @@
       "predictions": "reference_2025_full.csv"
     }
   },
-  "seconds": 64
+  "analyses": {
+    "calibration": {
+      "path": "artifacts/evaluation/calibration_2025_frozen.json",
+      "sha256": "029503dbb916ef849b748954b1943c464f42140d16196a4cf104f4368787ade8",
+      "predictions": "frozen_2025_full.csv"
+    },
+    "alerts": {
+      "path": "artifacts/evaluation/alerts_2025_frozen.json",
+      "sha256": "df562cb3e84fe1f2b6cdd26341b7f0c3c6d2add0062896e71928c5336c97b94b",
+      "predictions": "frozen_2025_full.csv"
+    }
+  },
+  "seconds": 67
 }

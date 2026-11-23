@@ -1,0 +1,504 @@
+{
+  "model": "frozen ensemble",
+  "predictions": "frozen_2025_full.csv",
+  "protocol": {
+    "fit": [
+      "2025-06-01",
+      "2025-09-01"
+    ],
+    "evaluate": [
+      "2025-09-01",
+      "2026-01-01"
+    ],
+    "cutoff": "2025-09-01",
+    "ridge": 0.001,
+    "clip": 1e-06,
+    "bins": 10,
+    "primary": {
+      "statistic": "Brier difference, p_event - challenge risk",
+      "block_days": 7,
+      "reps": 2000,
+      "seed": 0
+    }
+  },
+  "tasks": {
+    "A": {
+      "params": {
+        "a": -1.0219811874459528,
+        "b": 0.8400147557570415
+      },
+      "fit_cases": 75556,
+      "fit_event_rate": 0.12975806024670444,
+      "evaluate_cases": 97768,
+      "evaluate_issue_days": 122,
+      "evaluate_event_rate": 0.060981098109810984,
+      "brier": {
+        "challenge_risk": 0.05798214166599385,
+        "p_event": 0.051378910302421546
+      },
+      "log_loss": {
+        "challenge_risk": 0.2648784106109956,
+        "p_event": 0.20096123217034872
+      },
+      "brier_difference": {
+        "7-day blocks": {
+          "estimate": -0.0066032313635723035,
+          "ci95": [
+            -0.009621352402838663,
+            -0.0033017994168215263
+          ],
+          "bootstrap_sd": 0.001619453715449171,
+          "excludes_zero": true,
+          "reps": 2000
+        },
+        "14-day blocks": {
+          "estimate": -0.0066032313635723035,
+          "ci95": [
+            -0.009945060851380076,
+            -0.003133666347571987
+          ],
+          "bootstrap_sd": 0.0017381455124963446,
+          "excludes_zero": true,
+          "reps": 2000
+        }
+      },
+      "log_loss_difference": {
+        "7-day blocks": {
+          "estimate": -0.06391717844064691,
+          "ci95": [
+            -0.10526686417251542,
+            -0.02601606390938415
+          ],
+          "bootstrap_sd": 0.020215756073313624,
+          "excludes_zero": true,
+          "reps": 2000
+        }
+      },
+      "reliability": {
+        "challenge_risk": [
+          {
+            "bin": [
+              0.0,
+              0.1
+            ],
+            "cases": 85270,
+            "mean_predicted": 0.026271812997021193,
+            "event_rate": 0.03531136390289668
+          },
+          {
+            "bin": [
+              0.1,
+              0.2
+            ],
+            "cases": 5383,
+            "mean_predicted": 0.13692223137034387,
+            "event_rate": 0.11183355006501951
+          },
+          {
+            "bin": [
+              0.2,
+              0.3
+            ],
+            "cases": 1681,
+            "mean_predicted": 0.24208110784507525,
+            "event_rate": 0.165377751338489
+          },
+          {
+            "bin": [
+              0.3,
+              0.4
+            ],
+            "cases": 821,
+            "mean_predicted": 0.3439522166564265,
+            "event_rate": 0.21559074299634592
+          },
+          {
+            "bin": [
+              0.4,
+              0.5
+            ],
+            "cases": 514,
+            "mean_predicted": 0.44557970258496576,
+            "event_rate": 0.23346303501945526
+          },
+          {
+            "bin": [
+              0.5,
+              0.6
+            ],
+            "cases": 430,
+            "mean_predicted": 0.5481402244859555,
+            "event_rate": 0.24186046511627907
+          },
+          {
+            "bin": [
+              0.6,
+              0.7
+            ],
+            "cases": 362,
+            "mean_predicted": 0.6519499689705723,
+            "event_rate": 0.23756906077348067
+          },
+          {
+            "bin": [
+              0.7,
+              0.8
+            ],
+            "cases": 345,
+            "mean_predicted": 0.7484892118996289,
+            "event_rate": 0.3159420289855073
+          },
+          {
+            "bin": [
+              0.8,
+              0.9
+            ],
+            "cases": 440,
+            "mean_predicted": 0.8520953604791791,
+            "event_rate": 0.3886363636363636
+          },
+          {
+            "bin": [
+              0.9,
+              1.0
+            ],
+            "cases": 2522,
+            "mean_predicted": 0.9841485193012123,
+            "event_rate": 0.5170499603489295
+          }
+        ],
+        "p_event": [
+          {
+            "bin": [
+              0.0,
+              0.1
+            ],
+            "cases": 87928,
+            "mean_predicted": 0.06137122288201281,
+            "event_rate": 0.0373146210535893
+          },
+          {
+            "bin": [
+              0.1,
+              0.2
+            ],
+            "cases": 5177,
+            "mean_predicted": 0.12829765994967202,
+            "event_rate": 0.14989376086536604
+          },
+          {
+            "bin": [
+              0.2,
+              0.3
+            ],
+            "cases": 803,
+            "mean_predicted": 0.2445615658420937,
+            "event_rate": 0.22789539227895392
+          },
+          {
+            "bin": [
+              0.3,
+              0.4
+            ],
+            "cases": 516,
+            "mean_predicted": 0.3492201264487106,
+            "event_rate": 0.25
+          },
+          {
+            "bin": [
+              0.4,
+              0.5
+            ],
+            "cases": 482,
+            "mean_predicted": 0.4498407997078576,
+            "event_rate": 0.3215767634854772
+          },
+          {
+            "bin": [
+              0.5,
+              0.6
+            ],
+            "cases": 533,
+            "mean_predicted": 0.5517801931899453,
+            "event_rate": 0.39587242026266417
+          },
+          {
+            "bin": [
+              0.6,
+              0.7
+            ],
+            "cases": 673,
+            "mean_predicted": 0.6518976945678275,
+            "event_rate": 0.5007429420505201
+          },
+          {
+            "bin": [
+              0.7,
+              0.8
+            ],
+            "cases": 825,
+            "mean_predicted": 0.75038609772624,
+            "event_rate": 0.4896969696969697
+          },
+          {
+            "bin": [
+              0.8,
+              0.9
+            ],
+            "cases": 695,
+            "mean_predicted": 0.8427027251846111,
+            "event_rate": 0.5496402877697841
+          },
+          {
+            "bin": [
+              0.9,
+              1.0
+            ],
+            "cases": 136,
+            "mean_predicted": 0.9215714202597554,
+            "event_rate": 0.7647058823529411
+          }
+        ]
+      }
+    },
+    "B": {
+      "params": {
+        "a": -0.5935697302468729,
+        "b": 1.2004114924624918
+      },
+      "fit_cases": 468532,
+      "fit_event_rate": 0.12814919792031282,
+      "evaluate_cases": 603664,
+      "evaluate_issue_days": 122,
+      "evaluate_event_rate": 0.061689946725330645,
+      "brier": {
+        "challenge_risk": 0.04351844692689125,
+        "p_event": 0.0435508641111794
+      },
+      "log_loss": {
+        "challenge_risk": 0.1808483221052661,
+        "p_event": 0.17193162848657265
+      },
+      "brier_difference": {
+        "7-day blocks": {
+          "estimate": 3.2417184288156565e-05,
+          "ci95": [
+            -0.0005962684642823818,
+            0.0007838886895824889
+          ],
+          "bootstrap_sd": 0.00035344697053628886,
+          "excludes_zero": false,
+          "reps": 2000
+        },
+        "14-day blocks": {
+          "estimate": 3.2417184288156565e-05,
+          "ci95": [
+            -0.0006718689525868961,
+            0.0005904938785415266
+          ],
+          "bootstrap_sd": 0.0003221947611472072,
+          "excludes_zero": false,
+          "reps": 2000
+        }
+      },
+      "log_loss_difference": {
+        "7-day blocks": {
+          "estimate": -0.008916693618693535,
+          "ci95": [
+            -0.013813498386074633,
+            -0.0005660158482641559
+          ],
+          "bootstrap_sd": 0.0034307321272645966,
+          "excludes_zero": true,
+          "reps": 2000
+        }
+      },
+      "reliability": {
+        "challenge_risk": [
+          {
+            "bin": [
+              0.0,
+              0.1
+            ],
+            "cases": 548258,
+            "mean_predicted": 0.020768771735313097,
+            "event_rate": 0.030330610770841464
+          },
+          {
+            "bin": [
+              0.1,
+              0.2
+            ],
+            "cases": 22717,
+            "mean_predicted": 0.13700303874377398,
+            "event_rate": 0.1482590130739094
+          },
+          {
+            "bin": [
+              0.2,
+              0.3
+            ],
+            "cases": 7477,
+            "mean_predicted": 0.2437799484122935,
+            "event_rate": 0.2605322990504213
+          },
+          {
+            "bin": [
+              0.3,
+              0.4
+            ],
+            "cases": 4047,
+            "mean_predicted": 0.3461710364927661,
+            "event_rate": 0.4111687669878923
+          },
+          {
+            "bin": [
+              0.4,
+              0.5
+            ],
+            "cases": 2572,
+            "mean_predicted": 0.44763577121918785,
+            "event_rate": 0.4401244167962675
+          },
+          {
+            "bin": [
+              0.5,
+              0.6
+            ],
+            "cases": 2181,
+            "mean_predicted": 0.5498015013807699,
+            "event_rate": 0.530949105914718
+          },
+          {
+            "bin": [
+              0.6,
+              0.7
+            ],
+            "cases": 2020,
+            "mean_predicted": 0.6498630751407212,
+            "event_rate": 0.5381188118811882
+          },
+          {
+            "bin": [
+              0.7,
+              0.8
+            ],
+            "cases": 2178,
+            "mean_predicted": 0.749662006194491,
+            "event_rate": 0.5973370064279155
+          },
+          {
+            "bin": [
+              0.8,
+              0.9
+            ],
+            "cases": 2332,
+            "mean_predicted": 0.8512028110138068,
+            "event_rate": 0.5797598627787307
+          },
+          {
+            "bin": [
+              0.9,
+              1.0
+            ],
+            "cases": 9882,
+            "mean_predicted": 0.983140001306959,
+            "event_rate": 0.7691762801052419
+          }
+        ],
+        "p_event": [
+          {
+            "bin": [
+              0.0,
+              0.1
+            ],
+            "cases": 563046,
+            "mean_predicted": 0.043217361730505055,
+            "event_rate": 0.03318734170920316
+          },
+          {
+            "bin": [
+              0.1,
+              0.2
+            ],
+            "cases": 16844,
+            "mean_predicted": 0.13365423710480895,
+            "event_rate": 0.22571835668487295
+          },
+          {
+            "bin": [
+              0.2,
+              0.3
+            ],
+            "cases": 3886,
+            "mean_predicted": 0.24265669683405153,
+            "event_rate": 0.44390118373648996
+          },
+          {
+            "bin": [
+              0.3,
+              0.4
+            ],
+            "cases": 2153,
+            "mean_predicted": 0.34665238505138213,
+            "event_rate": 0.4482117974918718
+          },
+          {
+            "bin": [
+              0.4,
+              0.5
+            ],
+            "cases": 1821,
+            "mean_predicted": 0.44835011322668306,
+            "event_rate": 0.5485996705107083
+          },
+          {
+            "bin": [
+              0.5,
+              0.6
+            ],
+            "cases": 1915,
+            "mean_predicted": 0.5510676870221572,
+            "event_rate": 0.5451697127937337
+          },
+          {
+            "bin": [
+              0.6,
+              0.7
+            ],
+            "cases": 2201,
+            "mean_predicted": 0.6508749211420141,
+            "event_rate": 0.5997273966378919
+          },
+          {
+            "bin": [
+              0.7,
+              0.8
+            ],
+            "cases": 2602,
+            "mean_predicted": 0.7514264282034329,
+            "event_rate": 0.5595695618754803
+          },
+          {
+            "bin": [
+              0.8,
+              0.9
+            ],
+            "cases": 2911,
+            "mean_predicted": 0.8495591128390132,
+            "event_rate": 0.6884232222603917
+          },
+          {
+            "bin": [
+              0.9,
+              1.0
+            ],
+            "cases": 6285,
+            "mean_predicted": 0.9584848736146266,
+            "event_rate": 0.8335719968178202
+          }
+        ]
+      }
+    }
+  }
+}

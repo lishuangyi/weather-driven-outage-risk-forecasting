@@ -60,9 +60,11 @@ scores 70–90, while a quiet one scores 25–40. The lead also matters: Task A 
 - **Few places.** Five counties and one year of evaluation. Behaviour elsewhere is unknown.
 - **Replay assumptions.** Publication times are assumed. Real delays cost about 5 points on Task A.
 - **New outages are hard.** Outages that start after the issue time are hard to predict. Much of the skill comes from
-  tracking outages already under way.
-- **Over-confident at the top.** Predicted risk above 0.5 is over-confident; calibrate before using it as a
-  probability.
+  tracking outages already under way. In a budgeted alert replay (4 alerts per county per 30 days), the model's alerts
+  were right more often than those of persistence or a gust score. It did not find clearly more new outages.
+- **Over-confident at the top.** Predicted risk above 0.5 is over-confident, so do not read it as a probability.
+  A separate event probability fitted on summer improves Task A on September–December and leaves Task B unchanged.
+  It stays over-confident when the season changes ([RESULTS.md](RESULTS.md#11-event-probability-and-alert-budget)).
 - **Long events.** Multi-day events, such as the January 2025 Los Angeles wildfires, can be handled worse than by
   persistence.
 - **No 5-minute dynamics.** Task B models the 15-minute series and does not model 5-minute dynamics.

@@ -373,7 +373,7 @@ def table_calibration(r: dict, ctx: dict) -> str:
     same = all(t['brier_difference']['14-day blocks']['excludes_zero'] == t['brier_difference']['7-day blocks']['excludes_zero']
                for t in c['tasks'].values())
     rows += ['', 'Fitted maps: ' + '; '.join(
-        f"Task {k}: p_event = sigmoid({t['params']['a']:.3f} + {t['params']['b']:.3f} · asinh(4000 (x̂ − x₀)))"
+        f"Task {k}: p_event = sigmoid({t['params']['a']:.3f} + {t['params']['b']:.3f} · asinh(4000 (x̂ − x₀)))".replace('-', '−')
         for k, t in c['tasks'].items()) + '. With 14-day blocks the Brier intervals reach '
         + ('the same conclusions.' if same else 'a different conclusion for at least one task; see the JSON file.')]
     return '\n'.join(rows)

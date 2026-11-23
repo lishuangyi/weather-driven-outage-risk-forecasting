@@ -108,6 +108,16 @@ run. On 2025 the frozen ensemble beats persistence:
 
 The reference model's Task A interval includes zero, so it cannot be told apart from persistence.
 
+**Beyond the challenge score.** Two analyses were fixed in code before they were run, then fitted on June–August
+2025 and replayed on September–December:
+
+- **Event probability.** A separate calibrated event probability improves the Brier score of Task A. It does not
+  improve Task B.
+- **Alert replay.** At 4 alerts per county per 30 days, the model's alerts are right more often than those of
+  persistence or a gust score. It does not find clearly more new outages.
+
+Details are in [RESULTS.md §11](docs/RESULTS.md#11-event-probability-and-alert-budget).
+
 ## Usage
 
 | Task | Command |
@@ -117,6 +127,7 @@ The reference model's Task A interval includes zero, so it cannot be told apart 
 | Run an analysis query | `python -m outage_forecast.warehouse query sql/analysis/model_vs_persistence.sql` |
 | Train the reference model | `python scripts/download_artifacts.py training full-2025 && make train` |
 | Confidence interval vs persistence | `python -m outage_forecast.evaluation --input-dir <dir> --predictions <file.csv>` |
+| Event probability and alert-budget replay | `make calibration alerts` (needs the full-year 2025 inputs and predictions) |
 | Versioned run report of the benchmarks | `make report` (evaluations in `configs/benchmark.json`; tables in the docs are generated from it) |
 | Demo with a summary page | `make demo` (see [docs/DEMO.md](docs/DEMO.md)) |
 | Rebuild the inputs from public archives | `bash data_pipeline/build_inputs.sh --start 2025-06-01 --end 2025-09-01` (see [docs/DATA.md](docs/DATA.md)) |
@@ -141,6 +152,8 @@ On every push, GitHub Actions installs the CPU environment and runs these steps:
    - SQL against Python parity for the 30 history features, the labels and the scores;
    - the metric against scikit-learn;
    - the reference trainer's NULL handling, purging and output format;
+   - the event probability (fitted map, fit cut-off) and the alert replay (onset rules, budget ties, one-to-one
+     matching, alerts unchanged by later truth);
    - the run report on the fixture, and that every benchmark table in the docs matches the committed report.
 
 Two checks need local data and are skipped in CI: full-window parity (June–August 2025) and the reference training run.
@@ -148,8 +161,9 @@ Two checks need local data and are skipped in CI: full-window parity (June–Aug
 ## Project structure
 
 ```
-src/outage_forecast/   inference package; warehouse.py (SQL runner), reference.py (trainer), evaluation.py, run_report.py
-sql/                   bronze/ silver/ gold/ scoring/ analysis/ (DuckDB)
+src/outage_forecast/   inference package; warehouse.py (SQL runner), reference.py (trainer), evaluation.py, calibration.py,
+                       alerts.py, run_report.py
+sql/                   bronze/ silver/ gold/ scoring/ events/ analysis/ (DuckDB)
 configs/               runtime configuration (feature schemas, member weights, fallbacks, model SHA-256); benchmark spec
 artifacts/             release manifest, run report, training report, bootstrap results
 data_pipeline/         builds the input tables from HRRR, MRMS, EAGLE-I and Census polygons
