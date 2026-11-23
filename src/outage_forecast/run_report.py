@@ -206,6 +206,9 @@ def run(spec_path: Path = SPEC, out: Path = REPORT) -> dict:
     report['uncertainty'] = {p: {'sha256': sha256(resolve(p)),
                                  'predictions': json.loads(resolve(p).read_text())['predictions']}
                              for p in spec.get('uncertainty', [])}
+    report['analyses'] = {name: {'path': p, 'sha256': sha256(resolve(p)),
+                                 'predictions': json.loads(resolve(p).read_text())['predictions']}
+                          for name, p in spec.get('analyses', {}).items()}
     report['seconds'] = round(time.time() - t0)
     out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -351,9 +354,98 @@ def table_selection(r: dict, ctx: dict) -> str:
     return '\n'.join(rows)
 
 
+def _pct(v: float | None, digits: int = 1) -> str:
+    return '–' if v is None else f'{100 * v:.{digits}f} %'
+
+
+def table_calibration(r: dict, ctx: dict) -> str:
+    c = ctx['calibration']
+    rows = ['| Sep–Dec 2025 | Cases | Event rate, fit → evaluation | Brier, challenge risk / p_event '
+            '| Brier difference, 95 % CI | Log loss, challenge risk / p_event | Log-loss difference, 95 % CI |',
+            '|---|---:|---|---|---|---|---|']
+    for task in ('A', 'B'):
+        t = c['tasks'][task]
+        rows.append(f"| Task {task} | {t['evaluate_cases']:,} | {_pct(t['fit_event_rate'])} → {_pct(t['evaluate_event_rate'])} "
+                    f"| {t['brier']['challenge_risk']:.4f} / {t['brier']['p_event']:.4f} "
+                    f"| {_ci(t['brier_difference']['7-day blocks'], 4)} "
+                    f"| {t['log_loss']['challenge_risk']:.3f} / {t['log_loss']['p_event']:.3f} "
+                    f"| {_ci(t['log_loss_difference']['7-day blocks'], 3)} |")
+    same = all(t['brier_difference']['14-day blocks']['excludes_zero'] == t['brier_difference']['7-day blocks']['excludes_zero']
+               for t in c['tasks'].values())
+    rows += ['', 'Fitted maps: ' + '; '.join(
+        f"Task {k}: p_event = sigmoid({t['params']['a']:.3f} + {t['params']['b']:.3f} · asinh(4000 (x̂ − x₀)))"
+        for k, t in c['tasks'].items()) + '. With 14-day blocks the Brier intervals reach '
+        + ('the same conclusions.' if same else 'a different conclusion for at least one task; see the JSON file.')]
+    return '\n'.join(rows)
+
+
+def table_reliability(r: dict, ctx: dict) -> str:
+    c = ctx['calibration']
+    rows = ['| Predicted | Task A challenge risk | Task A p_event | Task B challenge risk | Task B p_event |',
+            '|---|---|---|---|---|']
+    cell = lambda b: f"{b['mean_predicted']:.2f} → {b['event_rate']:.2f} ({b['cases']:,})" if b else '–'  # noqa: E731
+    bins = {(task, kind): {round(b['bin'][0], 1): b for b in c['tasks'][task]['reliability'][kind]}
+            for task in ('A', 'B') for kind in ('challenge_risk', 'p_event')}
+    for i in range(10):
+        lo = round(i / 10, 1)
+        rows.append(f'| {lo:.1f}–{lo + 0.1:.1f} | ' + ' | '.join(
+            cell(bins[(task, kind)].get(lo)) for task in ('A', 'B') for kind in ('challenge_risk', 'p_event')) + ' |')
+    return '\n'.join(rows)
+
+
+METHOD = {'model': 'model (max predicted share)', 'persistence': 'near-threshold persistence', 'weather': 'max HRRR gust'}
+
+
+def table_alerts(r: dict, ctx: dict) -> str:
+    a = ctx['alerts']
+    rows = ['| Budget (per county, 30 days) | Score | Alerts issued (per county, 30 days) | Hits / verified alerts '
+            '| Precision | Matched / onsets | Recall | Median lead |', '|---|---|---:|---:|---:|---:|---:|---:|']
+    for budget, e in a['budgets'].items():
+        for m in a['protocol']['methods']:
+            s = e['pooled'][m]
+            lead = '–' if s['median_lead_hours'] is None else f"{s['median_lead_hours']:.0f} h"
+            rows.append(f"| {budget} | {METHOD[m]} | {s['alerts']} ({s['alerts_per_county_per_30_days']:.1f}) "
+                        f"| {s['hits']} / {s['verified_alerts']} | {_pct(s['precision'], 0)} "
+                        f"| {s['matched_onsets']} / {s['onsets_in_verified_windows']} | {_pct(s['recall'], 0)} | {lead} |")
+    rows += ['', '| Budget | Statistic | Model − persistence, 95 % CI | Model − gust, 95 % CI |', '|---|---|---|---|']
+    for budget, e in a['budgets'].items():
+        d = e['differences']
+        for stat in ('recall', 'precision'):
+            primary = budget == str(a['protocol']['primary']['budget']) and stat == 'recall'
+            cells = [d[f'model - {base}'].get(f'{stat}, 7-day blocks') for base in ('persistence', 'weather')]
+            text = ['–' if c is None else _ci({'estimate': 100 * c['estimate'], 'ci95': [100 * x for x in c['ci95']]}, 1)
+                    + ' pt' for c in cells]
+            label = f'**{stat}** (primary)' if primary else stat
+            rows.append(f'| {budget} | {label} | ' + ' | '.join(f'**{t}**' if primary and i == 0 else t
+                                                               for i, t in enumerate(text)) + ' |')
+    large = a['budgets'][str(a['protocol']['primary']['budget'])]['large_outages']
+    pre = large['preceded_by_an_alert']
+    rows += ['', f"Large outages ({100 * large['threshold_x']:.1f} %): {large['onsets']} onsets in September–December; "
+                 f"an alert at {a['protocol']['primary']['budget']} per 30 days came before "
+                 f"{pre['model']} (model), {pre['persistence']} (persistence) and {pre['weather']} (gust) of them."]
+    return '\n'.join(rows)
+
+
+def table_alerts_by_county(r: dict, ctx: dict) -> str:
+    a = ctx['alerts']
+    budget = str(a['protocol']['primary']['budget'])
+    e = a['budgets'][budget]
+    rows = [f'| County (budget {budget}) | Onsets in verified windows | Matched: model / persistence / gust '
+            '| Alerts: model / persistence / gust | Quiet issues (eligible) |', '|---|---:|---|---|---:|']
+    for fips, name in COUNTIES.items():
+        d = e['by_county'][fips]
+        rows.append(f"| {name} | {d['model']['onsets_in_verified_windows']} | "
+                    + ' / '.join(str(d[m]['matched_onsets']) for m in ('model', 'persistence', 'weather')) + ' | '
+                    + ' / '.join(str(d[m]['alerts']) for m in ('model', 'persistence', 'weather'))
+                    + f" | {d['model']['issues'] - d['model']['abstained_issues']} of {d['model']['issues']} |")
+    return '\n'.join(rows)
+
+
 TABLES = {'benchmarks': table_benchmarks, 'headline': table_headline, 'reference': table_reference,
           'model-card': table_model_card, 'coverage': table_coverage, 'bootstrap': table_bootstrap,
-          'bootstrap-summary': table_bootstrap_summary, 'selection': table_selection}
+          'bootstrap-summary': table_bootstrap_summary, 'selection': table_selection,
+          'calibration': table_calibration, 'reliability': table_reliability, 'alerts': table_alerts,
+          'alerts-by-county': table_alerts_by_county}
 BLOCK = re.compile(r'(<!-- run-report:(?P<name>[\w-]+) -->\n)(?P<body>.*?)(<!-- /run-report:(?P=name) -->)', re.S)
 
 
@@ -364,6 +456,10 @@ def context(report: dict) -> dict:
         if sha256(PACKAGE_ROOT / path) != meta['sha256']:
             raise RuntimeError(f'{path} changed after the run report was made; run `run_report run` again')
         ctx['bootstrap'][path] = json.loads((PACKAGE_ROOT / path).read_text())
+    for name, meta in report.get('analyses', {}).items():
+        if sha256(PACKAGE_ROOT / meta['path']) != meta['sha256']:
+            raise RuntimeError(f"{meta['path']} changed after the run report was made; run `run_report run` again")
+        ctx[name] = json.loads((PACKAGE_ROOT / meta['path']).read_text())
     ctx['reference'] = json.loads((PACKAGE_ROOT / report['recipes']['reference']['training_report']).read_text())
     return ctx
 

@@ -51,6 +51,10 @@
      "predictions": "reference_2025_full", "input": "input_2025_full",
      "window": [["2025-06-01", "2025-09-01"]], "role": "retrospective (fit 2022-2024)"}
   ],
+  "analyses": {
+    "calibration": "artifacts/evaluation/calibration_2025_frozen.json",
+    "alerts": "artifacts/evaluation/alerts_2025_frozen.json"
+  },
   "uncertainty": [
     "artifacts/evaluation/bootstrap_2025_frozen.json",
     "artifacts/evaluation/bootstrap_2025_reference.json"
