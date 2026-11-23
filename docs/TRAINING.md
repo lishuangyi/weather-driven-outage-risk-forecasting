@@ -55,23 +55,27 @@ scores below come from the SQL metric (`sql/scoring`), with persistence scored o
 
 ### Selection on 2023 (challenge score; persistence: A 51.78, B 74.10)
 
+<!-- run-report:selection -->
 | Rounds | 25 | 50 | 100 | 200 | 400 | 800 | 1200 |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | A plain | 56.48 | 57.46 | 57.64 | 57.59 | 57.21 | 56.86 | 56.62 |
 | A anchored | 56.16 | **57.99** | 57.81 | 57.43 | 56.99 | 56.71 | 56.50 |
 | B plain | 75.29 | 76.19 | 76.17 | 76.09 | 76.02 | 75.76 | 75.51 |
 | B anchored | 76.13 | **76.76** | 76.49 | 76.50 | 76.50 | 76.34 | 76.15 |
+<!-- /run-report:selection -->
 
 The selection chose the anchored variant with 50 rounds for both tasks. Longer training hurts, so the best model is a
 small correction to persistence.
 
 ## Results
 
+<!-- run-report:reference -->
 | Evaluation | Reference | Persistence | Frozen ensemble |
 |---|---:|---:|---:|
 | 2024 test, Task A / B | **55.01 / 72.54** | 49.75 / 69.56 | (trained on 2024) |
 | 2025 full year | 44.30 / 68.87 | 43.92 / 66.33 | **54.88 / 73.44** |
 | 2025 June–August | 42.62 / 69.19 | 38.69 / 65.88 | **54.45 / 75.13** |
+<!-- /run-report:reference -->
 
 - **2024 test.** The reference model beats persistence by 5.3 (A) and 3.0 (B).
 - **2025, Task B.** +2.5 over persistence. It beats persistence in 10 of 12 months; January (−0.2) and May (−0.5) are

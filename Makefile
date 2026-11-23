@@ -3,7 +3,7 @@ INPUT ?= data/inputs/input_2025
 OUT ?= out/predictions.csv
 FROZEN_2025 ?= out/frozen_2025_full.csv
 
-.PHONY: setup models data predict warehouse sql-smoke train bootstrap demo test lint
+.PHONY: setup models data predict warehouse sql-smoke train bootstrap report demo test lint
 setup:            ## CPU environment (Python 3.12)
 	$(PY) -m pip install -r requirements/cpu.txt -r requirements/dev.txt && $(PY) -m pip install -e . --no-deps
 models:           ## download the frozen models (39 MB)
@@ -20,6 +20,8 @@ train:            ## reference model from scratch: needs `python scripts/downloa
 	PYTHONPATH=src $(PY) -m outage_forecast.reference train
 bootstrap:        ## paired block-bootstrap CI vs persistence on 2025 (needs full-2025 inputs and FROZEN_2025 predictions, ≈5 min)
 	PYTHONPATH=src $(PY) -m outage_forecast.evaluation --input-dir data/inputs/input_2025_full --predictions $(FROZEN_2025) --name "frozen ensemble" --out artifacts/evaluation/bootstrap_2025_frozen.json
+report:           ## versioned run report of configs/benchmark.json (needs its inputs and prediction files), then the doc tables
+	PYTHONPATH=src $(PY) -m outage_forecast.run_report run && PYTHONPATH=src $(PY) -m outage_forecast.run_report render
 demo:             ## one-week demo with summary page (out/demo/summary.html)
 	$(PY) demo/run_demo.py --data $(INPUT) --start 2025-07-08 --end 2025-07-15 --counties Harris --out out/demo
 test:

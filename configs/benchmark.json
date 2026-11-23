@@ -1,0 +1,58 @@
+{
+  "description": "Evaluations behind the published benchmark tables. `python -m outage_forecast.run_report run` scores every entry and writes artifacts/runs/benchmark.json; `render` fills the tables in README.md and docs/ from that report.",
+  "predictions": {
+    "frozen_2025_full": {
+      "path": "out/frozen_2025_full.csv",
+      "model": "frozen ensemble",
+      "command": "python infer.py --input-dir data/inputs/input_2025_full --output out/frozen_2025_full.csv"
+    },
+    "frozen_package": {
+      "path": "out/predictions.csv",
+      "model": "frozen ensemble",
+      "command": "make predict"
+    },
+    "reference_2024": {
+      "path": "out/reference/reference_2024.csv",
+      "model": "reference",
+      "command": "make train (stage 2: fit 2022-2023, predict 2024)"
+    },
+    "reference_2025_full": {
+      "path": "out/reference/reference_2025_full.csv",
+      "model": "reference",
+      "command": "make train (stage 3: fit 2022-2024, predict 2025); the saved model reproduces it with `python -m outage_forecast.reference predict --input-dir data/inputs/input_2025_full`"
+    }
+  },
+  "inputs": {
+    "input_2024_full": "data/inputs/input_2024_full",
+    "input_2025_full": "data/inputs/input_2025_full",
+    "input_2025": "data/inputs/input_2025"
+  },
+  "evaluations": [
+    {"id": "frozen_2025_jun_aug", "label": "2025-06-01 to 2025-08-31",
+     "predictions": "frozen_2025_full", "input": "input_2025_full",
+     "window": [["2025-06-01", "2025-09-01"]], "role": "member and weight selection"},
+    {"id": "frozen_2025_rest", "label": "the other 9 months of 2025",
+     "predictions": "frozen_2025_full", "input": "input_2025_full",
+     "window": [["2025-01-01", "2025-06-01"], ["2025-09-01", "2026-01-01"]],
+     "role": "retrospective; January-May informed one fallback decision"},
+    {"id": "frozen_2025_year", "label": "all of 2025",
+     "predictions": "frozen_2025_full", "input": "input_2025_full",
+     "window": [["2025-01-01", "2026-01-01"]], "role": "selection window and retrospective months together"},
+    {"id": "frozen_package", "label": "2025-06-01 to 2025-08-31, `input_2025` package",
+     "predictions": "frozen_package", "input": "input_2025",
+     "window": null, "role": "the June-August package of `make predict`; truth ends on 31 August"},
+    {"id": "reference_2024", "label": "2024",
+     "predictions": "reference_2024", "input": "input_2024_full",
+     "window": [["2024-01-01", "2025-01-01"]], "role": "chronological test (fit 2022-2023, selection on 2023)"},
+    {"id": "reference_2025_year", "label": "all of 2025",
+     "predictions": "reference_2025_full", "input": "input_2025_full",
+     "window": [["2025-01-01", "2026-01-01"]], "role": "retrospective (fit 2022-2024)"},
+    {"id": "reference_2025_jun_aug", "label": "2025-06-01 to 2025-08-31",
+     "predictions": "reference_2025_full", "input": "input_2025_full",
+     "window": [["2025-06-01", "2025-09-01"]], "role": "retrospective (fit 2022-2024)"}
+  ],
+  "uncertainty": [
+    "artifacts/evaluation/bootstrap_2025_frozen.json",
+    "artifacts/evaluation/bootstrap_2025_reference.json"
+  ]
+}

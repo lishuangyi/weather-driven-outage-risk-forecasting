@@ -18,8 +18,8 @@ architectures. All inputs are public: EAGLE-I outage records and NOAA HRRR weath
 
 ## Quick start
 
-Requires Python 3.12 on Linux or WSL. The repository and its release assets are private for now, so use an
-account with access and an authenticated GitHub CLI (`gh auth login`).
+Requires Python 3.12 on Linux or WSL. Release assets are downloaded over HTTPS (or with the GitHub CLI when it is
+installed) and checked against the SHA-256 in `artifacts/release_v1.0.0.json`.
 
 ```bash
 git clone https://github.com/lishuangyi/weather-driven-outage-risk-forecasting.git
@@ -72,6 +72,7 @@ scale, pooled over counties, architectures, issues and leads. They are not certi
 holds the latest observation. Both are scored on one cohort: the requests with available truth (84–86 % of 2025; only
 25–33 % for Rockingham, whose outage feed has long gaps).
 
+<!-- run-report:benchmarks -->
 | Model | Data window | Role of the window in development | Task A model / persistence | Task B model / persistence |
 |---|---|---|---:|---:|
 | Frozen ensemble | 2022–2024 | training | — | — |
@@ -79,6 +80,7 @@ holds the latest observation. Both are scored on one cohort: the requests with a
 | Frozen ensemble | rest of 2025 (9 months) | retrospective, not used for selection¹ | 55.00 / 46.92 | 72.75 / 66.59 |
 | Reference trainer² | 2024 | chronological test (fit 2022–23, selection on 2023) | 55.01 / 49.75 | 72.54 / 69.56 |
 | Reference trainer² | 2025, full year | retrospective (fit 2022–24) | 44.30 / 43.92 | 68.87 / 66.33 |
+<!-- /run-report:benchmarks -->
 
 ¹ January–May 2025 informed one decision: we rejected a fallback-routing change because of its January–May score.
 ² One XGBoost model per task, trained from scratch on the SQL training table ([TRAINING.md](docs/TRAINING.md)). It
@@ -88,17 +90,21 @@ frozen ensemble's event features and GRU are built for exactly such events.
 Scores come from the full-year 2025 inputs, with windows defined by UTC issue time. On the June–August package used by
 `make predict`, truth ends on 31 August, and the same forecasts score 54.52 / 38.82 and 75.13 / 65.88. All
 breakdowns are in [docs/RESULTS.md](docs/RESULTS.md): by lead, county, architecture and month, plus robustness to
-missing or delayed inputs, calibration, coverage, uncertainty, and an example storm.
+missing or delayed inputs, calibration, coverage, uncertainty, and an example storm. The tables are generated from a
+versioned run report that records the commit, the SHA-256 of every input, model and prediction file, the seeds and the
+machine ([artifacts/runs/benchmark.json](artifacts/runs/benchmark.json)).
 
 **Uncertainty.** We use a paired bootstrap over blocks of 7 issue days, with the analysis fixed in code before it was
 run. On 2025 the frozen ensemble beats persistence:
 
+<!-- run-report:bootstrap-summary -->
 | | Score difference vs persistence, 95 % CI |
 |---|---|
 | Frozen ensemble, Task A | +11.0 [+5.6, +16.1] |
 | Frozen ensemble, Task B | +7.1 [+5.2, +9.0] |
 | Reference model, Task B | +2.5 [+1.8, +3.5] |
 | Reference model, Task A | +0.4 [−3.4, +4.0] |
+<!-- /run-report:bootstrap-summary -->
 
 The reference model's Task A interval includes zero, so it cannot be told apart from persistence.
 
@@ -111,6 +117,7 @@ The reference model's Task A interval includes zero, so it cannot be told apart 
 | Run an analysis query | `python -m outage_forecast.warehouse query sql/analysis/model_vs_persistence.sql` |
 | Train the reference model | `python scripts/download_artifacts.py training full-2025 && make train` |
 | Confidence interval vs persistence | `python -m outage_forecast.evaluation --input-dir <dir> --predictions <file.csv>` |
+| Versioned run report of the benchmarks | `make report` (evaluations in `configs/benchmark.json`; tables in the docs are generated from it) |
 | Demo with a summary page | `make demo` (see [docs/DEMO.md](docs/DEMO.md)) |
 | Rebuild the inputs from public archives | `bash data_pipeline/build_inputs.sh --start 2025-06-01 --end 2025-09-01` (see [docs/DATA.md](docs/DATA.md)) |
 
@@ -133,16 +140,18 @@ On every push, GitHub Actions installs the CPU environment and runs these steps:
    - prediction files: duplicate, missing and extra keys or invalid values rejected; one cohort per score;
    - SQL against Python parity for the 30 history features, the labels and the scores;
    - the metric against scikit-learn;
-   - the reference trainer's NULL handling, purging and output format.
+   - the reference trainer's NULL handling, purging and output format;
+   - the run report on the fixture, and that every benchmark table in the docs matches the committed report.
 
 Two checks need local data and are skipped in CI: full-window parity (June–August 2025) and the reference training run.
 
 ## Project structure
 
 ```
-src/outage_forecast/   inference package; warehouse.py (SQL runner), reference.py (trainer), metrics.py
+src/outage_forecast/   inference package; warehouse.py (SQL runner), reference.py (trainer), evaluation.py, run_report.py
 sql/                   bronze/ silver/ gold/ scoring/ analysis/ (DuckDB)
-configs/               runtime configuration: feature schemas, member weights, fallbacks, model SHA-256
+configs/               runtime configuration (feature schemas, member weights, fallbacks, model SHA-256); benchmark spec
+artifacts/             release manifest, run report, training report, bootstrap results
 data_pipeline/         builds the input tables from HRRR, MRMS, EAGLE-I and Census polygons
 demo/  notebooks/      demo runner with summary page; notebook front end
 tests/                 pytest suite and 2-day fixture

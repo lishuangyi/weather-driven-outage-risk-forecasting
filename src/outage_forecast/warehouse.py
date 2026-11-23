@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import os
 import re
 import sys
@@ -113,15 +114,29 @@ class PredictionError(QualityError):
     """The predictions file does not cover the scoring scope exactly once with valid values; nothing was scored."""
 
 
-def scope_filter(scope: tuple[str, str] | None) -> str:
-    """SQL condition on issue_s for a [start, end) window of UTC issue times (ISO dates or timestamps)."""
+Scope = tuple[str, str] | list[tuple[str, str]] | None
+
+
+def intervals(scope) -> list[tuple[str, str]]:
+    """A scope as a list of [start, end) intervals: None, one (start, end) pair, or a list of pairs."""
+    if scope is None:
+        return []
+    if len(scope) == 2 and all(isinstance(t, str) for t in scope):
+        return [tuple(scope)]
+    return [tuple(i) for i in scope]
+
+
+def scope_filter(scope) -> str:
+    """SQL condition on issue_s for one or more [start, end) windows of UTC issue times (ISO dates or timestamps)."""
     if scope is None:
         return 'TRUE'
-    start, end = (f"epoch(TIMESTAMPTZ '{t}{'' if 'T' in t or ' ' in t else ' 00:00:00'}+00')" for t in scope)
-    return f'(issue_s >= {start} AND issue_s < {end})'
+    def bounds(start: str, end: str) -> str:
+        start, end = (f"epoch(TIMESTAMPTZ '{t}{'' if 'T' in t or ' ' in t else ' 00:00:00'}+00')" for t in (start, end))
+        return f'(issue_s >= {start} AND issue_s < {end})'
+    return '(' + ' OR '.join(bounds(*i) for i in intervals(scope)) + ')'
 
 
-def run_scoring(con: duckdb.DuckDBPyConnection, predictions: Path, scope: tuple[str, str] | None = None,
+def run_scoring(con: duckdb.DuckDBPyConnection, predictions: Path, scope: Scope = None,
                 on_fail: str = 'raise') -> None:
     """Scoring layer for one predictions file (Parquet or CSV) on the requests of `scope` (default: all)."""
     predictions = Path(predictions).resolve()
@@ -134,9 +149,10 @@ def run_scoring(con: duckdb.DuckDBPyConnection, predictions: Path, scope: tuple[
     for path in files[1:]:
         con.execute(render(path.read_text(encoding='utf-8'), values))
     digest = hashlib.sha256(predictions.read_bytes()).hexdigest()
+    windows = intervals(scope)
     con.execute('CREATE OR REPLACE TABLE gold.score_run AS SELECT ? AS predictions_file, ? AS predictions_sha256, '
-                '? AS scope_start, ? AS scope_end, now() AS scored_at',
-                [predictions.name, digest, scope[0] if scope else None, scope[1] if scope else None])
+                '? AS scope, now() AS scored_at',
+                [predictions.name, digest, json.dumps(windows) if windows else None])
 
 
 def _connect(path: Path | str) -> duckdb.DuckDBPyConnection:
@@ -152,7 +168,7 @@ def _remove(path: Path) -> None:
 
 def build(input_dir: Path, db: Path | str = ':memory:', predictions: Path | None = None, lookback_minutes: int = 4320,
           config: Config | None = None, on_fail: str = 'raise',
-          scope: tuple[str, str] | None = None) -> duckdb.DuckDBPyConnection:
+          scope: Scope = None) -> duckdb.DuckDBPyConnection:
     """Build the warehouse for one input directory and return the open connection.
 
     The build is atomic: a file database is written to `<db>.building` and replaces `<db>` only when every layer
@@ -160,7 +176,7 @@ def build(input_dir: Path, db: Path | str = ':memory:', predictions: Path | None
     fails, the build stops before the gold layer and raises QualityError (on_fail='raise'); on_fail='continue' builds
     everything anyway, for inspecting broken inputs. No model files are needed.
     With `predictions`, the file is scored on the requests whose issue time lies in `scope` = (start, end), UTC,
-    default all requests; a file that does not cover them exactly once raises PredictionError (see run_scoring).
+    or a list of such windows, default all requests; a file that does not cover them exactly once raises PredictionError (see run_scoring).
     """
     if on_fail not in ('raise', 'continue'):
         raise ValueError("on_fail must be 'raise' or 'continue'")
