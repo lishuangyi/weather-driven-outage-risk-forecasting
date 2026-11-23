@@ -70,10 +70,10 @@ small correction to persistence.
 ## Results
 
 <!-- run-report:reference -->
-| Evaluation | Reference | Persistence | Frozen ensemble |
+| Evaluation (Task A / B) | Reference | Persistence | Frozen ensemble |
 |---|---:|---:|---:|
-| 2024 test, Task A / B | **55.01 / 72.54** | 49.75 / 69.56 | (trained on 2024) |
-| 2025 full year | 44.30 / 68.87 | 43.92 / 66.33 | **54.88 / 73.44** |
+| 2024 chronological test | **55.01 / 72.54** | 49.75 / 69.56 | in its training data |
+| 2025 full year (retrospective) | 44.30 / 68.87 | 43.92 / 66.33 | **54.88 / 73.44** |
 | 2025 June–August | 42.62 / 69.19 | 38.69 / 65.88 | **54.45 / 75.13** |
 <!-- /run-report:reference -->
 

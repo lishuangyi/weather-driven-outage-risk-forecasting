@@ -76,10 +76,10 @@ holds the latest observation. Both are scored on one cohort: the requests with a
 | Model | Data window | Role of the window in development | Task A model / persistence | Task B model / persistence |
 |---|---|---|---:|---:|
 | Frozen ensemble | 2022–2024 | training | — | — |
-| Frozen ensemble | 2025-06 to 2025-08 | member and weight selection | 54.45 / 38.69 | 75.13 / 65.88 |
-| Frozen ensemble | rest of 2025 (9 months) | retrospective, not used for selection¹ | 55.00 / 46.92 | 72.75 / 66.59 |
-| Reference trainer² | 2024 | chronological test (fit 2022–23, selection on 2023) | 55.01 / 49.75 | 72.54 / 69.56 |
-| Reference trainer² | 2025, full year | retrospective (fit 2022–24) | 44.30 / 43.92 | 68.87 / 66.33 |
+| Frozen ensemble | 2025-06-01 to 2025-08-31 | member and weight selection | 54.45 / 38.69 | 75.13 / 65.88 |
+| Frozen ensemble | the other 9 months of 2025 | retrospective; January–May informed one fallback decision¹ | 55.00 / 46.92 | 72.75 / 66.59 |
+| Reference trainer² | 2024 | chronological test (fit 2022–2023, selection on 2023) | 55.01 / 49.75 | 72.54 / 69.56 |
+| Reference trainer² | all of 2025 | retrospective (fit 2022–2024) | 44.30 / 43.92 | 68.87 / 66.33 |
 <!-- /run-report:benchmarks -->
 
 ¹ January–May 2025 informed one decision: we rejected a fallback-routing change because of its January–May score.
@@ -102,8 +102,8 @@ run. On 2025 the frozen ensemble beats persistence:
 |---|---|
 | Frozen ensemble, Task A | +11.0 [+5.6, +16.1] |
 | Frozen ensemble, Task B | +7.1 [+5.2, +9.0] |
+| Reference model, Task A | +0.4 [−3.4, +3.9] |
 | Reference model, Task B | +2.5 [+1.8, +3.5] |
-| Reference model, Task A | +0.4 [−3.4, +4.0] |
 <!-- /run-report:bootstrap-summary -->
 
 The reference model's Task A interval includes zero, so it cannot be told apart from persistence.

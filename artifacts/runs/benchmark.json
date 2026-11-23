@@ -1,0 +1,1286 @@
+{
+  "schema": 1,
+  "generated_at": "2026-11-23T12:15:03+00:00",
+  "spec": {
+    "path": "configs/benchmark.json",
+    "sha256": "f270e90480990102fd45e0f39545d9e1b58b2bedd2751b272b324892518a6944"
+  },
+  "code": {
+    "commit": "fc1a2b9825c295340afd9f6cf333c9846f112cc8",
+    "describe": "fc1a2b9",
+    "uncommitted_changes": []
+  },
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logical_cpus": 12,
+    "memory_gb": 9.7,
+    "gpu": "NVIDIA GeForce RTX 2060",
+    "packages": {
+      "duckdb": "2.0.0",
+      "polars": "1.43.2",
+      "numpy": "2.5.2",
+      "xgboost": "3.4.1",
+      "torch": "2.11.0+cu128",
+      "scikit-learn": "1.9.0"
+    },
+    "note": "scoring runs on the CPU; GPU only matters for `make train`"
+  },
+  "artifacts": {
+    "release_manifest": {
+      "path": "artifacts/release_v1.0.0.json",
+      "sha256": "f3a5497778a3c3a18da14389ff0a26efe114fb6936fd89da98a0e3187d45ec7d"
+    },
+    "frozen_ensemble": {
+      "config": "configs/inference.json",
+      "config_sha256": "7ec9c309d227399538213b52a2deaf5968531e6a65e433312a30674eec361e2d",
+      "model_files": 126,
+      "model_files_verified": true
+    },
+    "reference": {
+      "files": {
+        "reference.json": "dd76c52a802718b81c67b8cc0f07de5f20d51042640c398fa25e451f00dcd099",
+        "task_a.ubj": "5dc859a283a699200b1b2fd2994b1f787013d060bfe05e842aee6ab2a1e660eb",
+        "task_b.ubj": "3185fdca98d1fffd60e254e52c7b7f6c633e95cecb0ac2df68db45af09fc8b36"
+      },
+      "training_report_matches": "artifacts/reference/reference_v2.json: yes"
+    }
+  },
+  "recipes": {
+    "frozen_ensemble": {
+      "inference": "deterministic (no sampling); configs/inference.json fixes members, weights and fallbacks",
+      "training": "experiment code not included; weights frozen in release v1.0.0"
+    },
+    "reference": {
+      "training_report": "artifacts/reference/reference_v2.json",
+      "params": {
+        "objective": "reg:tweedie",
+        "tweedie_variance_power": 1.3,
+        "eval_metric": "tweedie-nloglik@1.3",
+        "eta": 0.05,
+        "max_depth": 7,
+        "min_child_weight": 10,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "lambda": 1.0,
+        "tree_method": "hist",
+        "seed": 42
+      },
+      "seed": 42,
+      "variants": [
+        "plain",
+        "anchored"
+      ],
+      "round_grid": [
+        25,
+        50,
+        100,
+        200,
+        400,
+        800,
+        1200
+      ],
+      "choice": {
+        "A": {
+          "variant": "anchored",
+          "rounds": 50
+        },
+        "B": {
+          "variant": "anchored",
+          "rounds": 50
+        }
+      },
+      "labelled_rows": {
+        "2022": {
+          "A": 72945,
+          "B": 449879
+        },
+        "2023": {
+          "A": 73668,
+          "B": 454009
+        },
+        "2024": {
+          "A": 75343,
+          "B": 462881
+        },
+        "2025": {
+          "A": 73523,
+          "B": 452393
+        }
+      },
+      "protocol": {
+        "selection": "fit 2022, choose on 2023 (cut-off 2024-01-01)",
+        "test": "fit 2022-2023, score 2024",
+        "final": "fit 2022-2024, score 2025"
+      }
+    }
+  },
+  "seeds": {
+    "reference_training": 42,
+    "bootstrap": 0,
+    "inference": "not random"
+  },
+  "inputs": {
+    "input_2025_full": {
+      "path": "data/inputs/input_2025_full",
+      "files": {
+        "eaglei/eaglei_outages.parquet": "bffab4af997ce08c5a620c83aef0b85061a16f3ecb5dce64ae552452b51c20cc",
+        "mcc/MCC.parquet": "af648664ab305d526fa17f74f0e101b585d7e431b58dc47cecd7f185f53db5ec",
+        "radar/mrms_county_series.parquet": "82a5c6f3d5af38e28fcd2c04ddb96d0da1de25549114d2d4726e4f175366edb5",
+        "requests/forecast_requests.parquet": "2c0319240d075e1a95b87d0fe8ebfe7d870cb860dbd4d977f79d325f9c300764",
+        "weather/weather_forecasts.parquet": "76b9aae775e079ab7859643aa0ccdad4a1651aee5dc816b2a32650f5a4ab1490"
+      },
+      "matches_SHA256SUMS": true,
+      "requests": {
+        "A": {
+          "rows": 350400,
+          "first_issue": "2025-01-01 00:00 UTC",
+          "last_issue": "2025-12-31 00:00 UTC"
+        },
+        "B": {
+          "rows": 2102400,
+          "first_issue": "2025-01-01 00:00 UTC",
+          "last_issue": "2025-12-31 18:00 UTC"
+        }
+      }
+    },
+    "input_2025": {
+      "path": "data/inputs/input_2025",
+      "files": {
+        "eaglei/eaglei_outages.parquet": "1715832f4e9ed4897bed2aa50b0601716c1945ba99e94c766dfd2a388ce81613",
+        "mcc/MCC.parquet": "af648664ab305d526fa17f74f0e101b585d7e431b58dc47cecd7f185f53db5ec",
+        "radar/mrms_county_series.parquet": "646dbc4d4f5c2c6e8f4996485e225b988729dc59635fc94fb956fb3cb01f4eb9",
+        "requests/forecast_requests.parquet": "bb2d8b16abbcb28a9db9a8f5e4da77dca5794ec4d9947d5c47171f4ee3812b19",
+        "weather/weather_forecasts.parquet": "a4e13dd376b33386b8715e04faf5e3c833fd0ca764ade8773216819715203baa"
+      },
+      "requests": {
+        "A": {
+          "rows": 88320,
+          "first_issue": "2025-06-01 00:00 UTC",
+          "last_issue": "2025-08-31 00:00 UTC"
+        },
+        "B": {
+          "rows": 529920,
+          "first_issue": "2025-06-01 00:00 UTC",
+          "last_issue": "2025-08-31 18:00 UTC"
+        }
+      }
+    },
+    "input_2024_full": {
+      "path": "data/inputs/input_2024_full",
+      "files": {
+        "eaglei/eaglei_outages.parquet": "7a0195f62b0ce716634c4b61966a24c379fa840633c2e49657af7430d5634ea0",
+        "mcc/MCC.parquet": "af648664ab305d526fa17f74f0e101b585d7e431b58dc47cecd7f185f53db5ec",
+        "radar/mrms_county_series.parquet": "3d3fe6db83b6443ea7c963b29ae6a0cc0b4db7416c3556d0d0284c21154856ea",
+        "requests/forecast_requests.parquet": "63924a508b57e1a6c2452a84c93d2737b62efcabbd076a940534127323ffee5b",
+        "weather/weather_forecasts.parquet": "16aec3cab52fff8cdee86dafd94cb36cb732091a533ac98e6bce59fae79a6f66"
+      },
+      "matches_SHA256SUMS": true,
+      "requests": {
+        "A": {
+          "rows": 351360,
+          "first_issue": "2024-01-01 00:00 UTC",
+          "last_issue": "2024-12-31 00:00 UTC"
+        },
+        "B": {
+          "rows": 2108160,
+          "first_issue": "2024-01-01 00:00 UTC",
+          "last_issue": "2024-12-31 18:00 UTC"
+        }
+      }
+    }
+  },
+  "predictions": {
+    "frozen_2025_full": {
+      "path": "out/frozen_2025_full.csv",
+      "model": "frozen ensemble",
+      "command": "python infer.py --input-dir data/inputs/input_2025_full --output out/frozen_2025_full.csv",
+      "sha256": "f04240b56d6d40734c47f8917d99f184595423e20afc8bfb055f98fc6e6d82b8",
+      "bytes": 247350982
+    },
+    "frozen_package": {
+      "path": "out/predictions.csv",
+      "model": "frozen ensemble",
+      "command": "make predict",
+      "sha256": "8e4a1672b17d6bbf950e102fda2ab6f4b014cae97d2d617a09069f740c6e529e",
+      "bytes": 62270866
+    },
+    "reference_2024": {
+      "path": "out/reference/reference_2024.csv",
+      "model": "reference",
+      "command": "make train (stage 2: fit 2022-2023, predict 2024)",
+      "sha256": "a97c1315a9cd52e950ca478c471db1fb4188f534fda98f079aed2a6c28e5453c",
+      "bytes": 242289053
+    },
+    "reference_2025_full": {
+      "path": "out/reference/reference_2025_full.csv",
+      "model": "reference",
+      "command": "make train (stage 3: fit 2022-2024, predict 2025); the saved model reproduces it with `python -m outage_forecast.reference predict --input-dir data/inputs/input_2025_full`",
+      "sha256": "682eb1201196c741223ed2d039bd3f3291cb13500b0191a452dfa70fc65b2e99",
+      "bytes": 241979442
+    }
+  },
+  "evaluations": {
+    "frozen_2025_jun_aug": {
+      "label": "2025-06-01 to 2025-08-31",
+      "role": "member and weight selection",
+      "input": "input_2025_full",
+      "predictions": "frozen_2025_full",
+      "model": "frozen ensemble",
+      "window": [
+        [
+          "2025-06-01",
+          "2025-09-01"
+        ]
+      ],
+      "prediction_checks": {
+        "duplicate prediction keys": {
+          "status": "pass",
+          "violations": 0
+        },
+        "requests without a prediction": {
+          "status": "pass",
+          "violations": 0
+        },
+        "predictions without a request": {
+          "status": "pass",
+          "violations": 0
+        },
+        "missing, non-finite or out-of-range values": {
+          "status": "pass",
+          "violations": 0
+        },
+        "prediction rows outside the scope (ignored)": {
+          "status": "note",
+          "violations": 1834560
+        }
+      },
+      "issue_days_scored": 92,
+      "tasks": {
+        "A": {
+          "model": {
+            "cases": 76004,
+            "positives": 9832,
+            "positive_rate": 0.12936161254670805,
+            "auprc_norm": 0.43712397662416863,
+            "mae_risk": 0.13346990932107486,
+            "score": 54.44755051378578
+          },
+          "persistence": {
+            "cases": 76004,
+            "positives": 9832,
+            "positive_rate": 0.12936161254670805,
+            "auprc_norm": 0.23607234559076448,
+            "mae_risk": 0.16061647601463733,
+            "score": 38.6900140189414
+          },
+          "coverage": {
+            "requested": 88320,
+            "scored": 76004,
+            "excluded_no_truth": 12316,
+            "excluded_invalid_truth": 0,
+            "counties": {
+              "06037": {
+                "requested": 17664,
+                "scored": 17424,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9764784946236559
+              },
+              "12086": {
+                "requested": 17664,
+                "scored": 17584,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9926075268817204
+              },
+              "26163": {
+                "requested": 17664,
+                "scored": 17664,
+                "lowest_month": "2025-06",
+                "lowest_month_share": 1.0
+              },
+              "33015": {
+                "requested": 17664,
+                "scored": 5684,
+                "lowest_month": "2025-08",
+                "lowest_month_share": 0.3178763440860215
+              },
+              "48201": {
+                "requested": 17664,
+                "scored": 17648,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9979838709677419
+              }
+            }
+          }
+        },
+        "B": {
+          "model": {
+            "cases": 468552,
+            "positives": 60044,
+            "positive_rate": 0.12814799638033772,
+            "auprc_norm": 0.6960338177935426,
+            "mae_risk": 0.08273269533104523,
+            "score": 75.13421895123956
+          },
+          "persistence": {
+            "cases": 468552,
+            "positives": 60044,
+            "positive_rate": 0.12814799638033772,
+            "auprc_norm": 0.5783881775940013,
+            "mae_risk": 0.10005628330844211,
+            "score": 65.87770623683905
+          },
+          "coverage": {
+            "requested": 529920,
+            "scored": 468552,
+            "excluded_no_truth": 61368,
+            "excluded_invalid_truth": 0,
+            "counties": {
+              "06037": {
+                "requested": 105984,
+                "scored": 105180,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9855510752688172
+              },
+              "12086": {
+                "requested": 105984,
+                "scored": 105828,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9973118279569892
+              },
+              "26163": {
+                "requested": 105984,
+                "scored": 105984,
+                "lowest_month": "2025-06",
+                "lowest_month_share": 1.0
+              },
+              "33015": {
+                "requested": 105984,
+                "scored": 45600,
+                "lowest_month": "2025-08",
+                "lowest_month_share": 0.42338709677419356
+              },
+              "48201": {
+                "requested": 105984,
+                "scored": 105960,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9996639784946236
+              }
+            }
+          }
+        }
+      }
+    },
+    "frozen_2025_rest": {
+      "label": "the other 9 months of 2025",
+      "role": "retrospective; January-May informed one fallback decision",
+      "input": "input_2025_full",
+      "predictions": "frozen_2025_full",
+      "model": "frozen ensemble",
+      "window": [
+        [
+          "2025-01-01",
+          "2025-06-01"
+        ],
+        [
+          "2025-09-01",
+          "2026-01-01"
+        ]
+      ],
+      "prediction_checks": {
+        "duplicate prediction keys": {
+          "status": "pass",
+          "violations": 0
+        },
+        "requests without a prediction": {
+          "status": "pass",
+          "violations": 0
+        },
+        "predictions without a request": {
+          "status": "pass",
+          "violations": 0
+        },
+        "missing, non-finite or out-of-range values": {
+          "status": "pass",
+          "violations": 0
+        },
+        "prediction rows outside the scope (ignored)": {
+          "status": "note",
+          "violations": 618240
+        }
+      },
+      "issue_days_scored": 273,
+      "tasks": {
+        "A": {
+          "model": {
+            "cases": 218088,
+            "positives": 19461,
+            "positive_rate": 0.0892346208869814,
+            "auprc_norm": 0.43098668086032,
+            "mae_risk": 0.09315508857829399,
+            "score": 54.995123850066655
+          },
+          "persistence": {
+            "cases": 218088,
+            "positives": 19461,
+            "positive_rate": 0.0892346208869814,
+            "auprc_norm": 0.3282750426440754,
+            "mae_risk": 0.10807849474452648,
+            "score": 46.91866582969249
+          },
+          "coverage": {
+            "requested": 262080,
+            "scored": 218088,
+            "excluded_no_truth": 43992,
+            "excluded_invalid_truth": 0,
+            "counties": {
+              "06037": {
+                "requested": 52416,
+                "scored": 51160,
+                "lowest_month": "2025-01",
+                "lowest_month_share": 0.9408602150537635
+              },
+              "12086": {
+                "requested": 52416,
+                "scored": 51128,
+                "lowest_month": "2025-03",
+                "lowest_month_share": 0.9005376344086021
+              },
+              "26163": {
+                "requested": 52416,
+                "scored": 52208,
+                "lowest_month": "2025-12",
+                "lowest_month_share": 0.9825268817204301
+              },
+              "33015": {
+                "requested": 52416,
+                "scored": 11672,
+                "lowest_month": "2025-02",
+                "lowest_month_share": 0.15327380952380953
+              },
+              "48201": {
+                "requested": 52416,
+                "scored": 51920,
+                "lowest_month": "2025-05",
+                "lowest_month_share": 0.956989247311828
+              }
+            }
+          }
+        },
+        "B": {
+          "model": {
+            "cases": 1341020,
+            "positives": 118990,
+            "positive_rate": 0.08873096598111885,
+            "auprc_norm": 0.6571296485971743,
+            "mae_risk": 0.06129567592844173,
+            "score": 72.75233174657703
+          },
+          "persistence": {
+            "cases": 1341020,
+            "positives": 118990,
+            "positive_rate": 0.08873096598111885,
+            "auprc_norm": 0.5781156727902836,
+            "mae_risk": 0.07075337137085574,
+            "score": 66.58984117499989
+          },
+          "coverage": {
+            "requested": 1572480,
+            "scored": 1341020,
+            "excluded_no_truth": 231460,
+            "excluded_invalid_truth": 0,
+            "counties": {
+              "06037": {
+                "requested": 314496,
+                "scored": 309896,
+                "lowest_month": "2025-01",
+                "lowest_month_share": 0.9489247311827957
+              },
+              "12086": {
+                "requested": 314496,
+                "scored": 309332,
+                "lowest_month": "2025-03",
+                "lowest_month_share": 0.9086021505376344
+              },
+              "26163": {
+                "requested": 314496,
+                "scored": 314168,
+                "lowest_month": "2025-03",
+                "lowest_month_share": 0.9936155913978495
+              },
+              "33015": {
+                "requested": 314496,
+                "scored": 94860,
+                "lowest_month": "2025-01",
+                "lowest_month_share": 0.22020609318996415
+              },
+              "48201": {
+                "requested": 314496,
+                "scored": 312764,
+                "lowest_month": "2025-05",
+                "lowest_month_share": 0.9606854838709677
+              }
+            }
+          }
+        }
+      }
+    },
+    "frozen_2025_year": {
+      "label": "all of 2025",
+      "role": "selection window and retrospective months together",
+      "input": "input_2025_full",
+      "predictions": "frozen_2025_full",
+      "model": "frozen ensemble",
+      "window": [
+        [
+          "2025-01-01",
+          "2026-01-01"
+        ]
+      ],
+      "prediction_checks": {
+        "duplicate prediction keys": {
+          "status": "pass",
+          "violations": 0
+        },
+        "requests without a prediction": {
+          "status": "pass",
+          "violations": 0
+        },
+        "predictions without a request": {
+          "status": "pass",
+          "violations": 0
+        },
+        "missing, non-finite or out-of-range values": {
+          "status": "pass",
+          "violations": 0
+        },
+        "prediction rows outside the scope (ignored)": {
+          "status": "pass",
+          "violations": 0
+        }
+      },
+      "issue_days_scored": 365,
+      "tasks": {
+        "A": {
+          "model": {
+            "cases": 294092,
+            "positives": 29293,
+            "positive_rate": 0.09960488554601961,
+            "auprc_norm": 0.4329284660413409,
+            "mae_risk": 0.10357389505971584,
+            "score": 54.88028757660768
+          },
+          "persistence": {
+            "cases": 294092,
+            "positives": 29293,
+            "positive_rate": 0.09960488554601961,
+            "auprc_norm": 0.2928436933228561,
+            "mae_risk": 0.12165620759782943,
+            "score": 43.92187180926847
+          },
+          "coverage": {
+            "requested": 350400,
+            "scored": 294092,
+            "excluded_no_truth": 56308,
+            "excluded_invalid_truth": 0,
+            "counties": {
+              "06037": {
+                "requested": 70080,
+                "scored": 68584,
+                "lowest_month": "2025-01",
+                "lowest_month_share": 0.9408602150537635
+              },
+              "12086": {
+                "requested": 70080,
+                "scored": 68712,
+                "lowest_month": "2025-03",
+                "lowest_month_share": 0.9005376344086021
+              },
+              "26163": {
+                "requested": 70080,
+                "scored": 69872,
+                "lowest_month": "2025-12",
+                "lowest_month_share": 0.9825268817204301
+              },
+              "33015": {
+                "requested": 70080,
+                "scored": 17356,
+                "lowest_month": "2025-02",
+                "lowest_month_share": 0.15327380952380953
+              },
+              "48201": {
+                "requested": 70080,
+                "scored": 69568,
+                "lowest_month": "2025-05",
+                "lowest_month_share": 0.956989247311828
+              }
+            }
+          }
+        },
+        "B": {
+          "model": {
+            "cases": 1809572,
+            "positives": 179034,
+            "positive_rate": 0.09893720725121742,
+            "auprc_norm": 0.668196439025381,
+            "mae_risk": 0.0668463577002251,
+            "score": 73.44357398439794
+          },
+          "persistence": {
+            "cases": 1809572,
+            "positives": 179034,
+            "positive_rate": 0.09893720725121742,
+            "auprc_norm": 0.5771424493184754,
+            "mae_risk": 0.07834076661911461,
+            "score": 66.3271645334078
+          },
+          "coverage": {
+            "requested": 2102400,
+            "scored": 1809572,
+            "excluded_no_truth": 292828,
+            "excluded_invalid_truth": 0,
+            "counties": {
+              "06037": {
+                "requested": 420480,
+                "scored": 415076,
+                "lowest_month": "2025-01",
+                "lowest_month_share": 0.9489247311827957
+              },
+              "12086": {
+                "requested": 420480,
+                "scored": 415160,
+                "lowest_month": "2025-03",
+                "lowest_month_share": 0.9086021505376344
+              },
+              "26163": {
+                "requested": 420480,
+                "scored": 420152,
+                "lowest_month": "2025-03",
+                "lowest_month_share": 0.9936155913978495
+              },
+              "33015": {
+                "requested": 420480,
+                "scored": 140460,
+                "lowest_month": "2025-01",
+                "lowest_month_share": 0.22020609318996415
+              },
+              "48201": {
+                "requested": 420480,
+                "scored": 418724,
+                "lowest_month": "2025-05",
+                "lowest_month_share": 0.9606854838709677
+              }
+            }
+          }
+        }
+      }
+    },
+    "reference_2025_year": {
+      "label": "all of 2025",
+      "role": "retrospective (fit 2022-2024)",
+      "input": "input_2025_full",
+      "predictions": "reference_2025_full",
+      "model": "reference",
+      "window": [
+        [
+          "2025-01-01",
+          "2026-01-01"
+        ]
+      ],
+      "prediction_checks": {
+        "duplicate prediction keys": {
+          "status": "pass",
+          "violations": 0
+        },
+        "requests without a prediction": {
+          "status": "pass",
+          "violations": 0
+        },
+        "predictions without a request": {
+          "status": "pass",
+          "violations": 0
+        },
+        "missing, non-finite or out-of-range values": {
+          "status": "pass",
+          "violations": 0
+        },
+        "prediction rows outside the scope (ignored)": {
+          "status": "pass",
+          "violations": 0
+        }
+      },
+      "issue_days_scored": 365,
+      "tasks": {
+        "A": {
+          "model": {
+            "cases": 294092,
+            "positives": 29293,
+            "positive_rate": 0.09960488554601961,
+            "auprc_norm": 0.2987409117234867,
+            "mae_risk": 0.12418915918741698,
+            "score": 44.30083939957608
+          },
+          "persistence": {
+            "cases": 294092,
+            "positives": 29293,
+            "positive_rate": 0.09960488554601961,
+            "auprc_norm": 0.2928436933228561,
+            "mae_risk": 0.12165620759782923,
+            "score": 43.921871809268474
+          },
+          "coverage": {
+            "requested": 350400,
+            "scored": 294092,
+            "excluded_no_truth": 56308,
+            "excluded_invalid_truth": 0,
+            "counties": {
+              "06037": {
+                "requested": 70080,
+                "scored": 68584,
+                "lowest_month": "2025-01",
+                "lowest_month_share": 0.9408602150537635
+              },
+              "12086": {
+                "requested": 70080,
+                "scored": 68712,
+                "lowest_month": "2025-03",
+                "lowest_month_share": 0.9005376344086021
+              },
+              "26163": {
+                "requested": 70080,
+                "scored": 69872,
+                "lowest_month": "2025-12",
+                "lowest_month_share": 0.9825268817204301
+              },
+              "33015": {
+                "requested": 70080,
+                "scored": 17356,
+                "lowest_month": "2025-02",
+                "lowest_month_share": 0.15327380952380953
+              },
+              "48201": {
+                "requested": 70080,
+                "scored": 69568,
+                "lowest_month": "2025-05",
+                "lowest_month_share": 0.956989247311828
+              }
+            }
+          }
+        },
+        "B": {
+          "model": {
+            "cases": 1809572,
+            "positives": 179034,
+            "positive_rate": 0.09893720725121742,
+            "auprc_norm": 0.6096157016856883,
+            "mae_risk": 0.07418712168717656,
+            "score": 68.86649958424721
+          },
+          "persistence": {
+            "cases": 1809572,
+            "positives": 179034,
+            "positive_rate": 0.09893720725121742,
+            "auprc_norm": 0.5771424493184755,
+            "mae_risk": 0.07834076661911507,
+            "score": 66.32716453340778
+          },
+          "coverage": {
+            "requested": 2102400,
+            "scored": 1809572,
+            "excluded_no_truth": 292828,
+            "excluded_invalid_truth": 0,
+            "counties": {
+              "06037": {
+                "requested": 420480,
+                "scored": 415076,
+                "lowest_month": "2025-01",
+                "lowest_month_share": 0.9489247311827957
+              },
+              "12086": {
+                "requested": 420480,
+                "scored": 415160,
+                "lowest_month": "2025-03",
+                "lowest_month_share": 0.9086021505376344
+              },
+              "26163": {
+                "requested": 420480,
+                "scored": 420152,
+                "lowest_month": "2025-03",
+                "lowest_month_share": 0.9936155913978495
+              },
+              "33015": {
+                "requested": 420480,
+                "scored": 140460,
+                "lowest_month": "2025-01",
+                "lowest_month_share": 0.22020609318996415
+              },
+              "48201": {
+                "requested": 420480,
+                "scored": 418724,
+                "lowest_month": "2025-05",
+                "lowest_month_share": 0.9606854838709677
+              }
+            }
+          }
+        }
+      }
+    },
+    "reference_2025_jun_aug": {
+      "label": "2025-06-01 to 2025-08-31",
+      "role": "retrospective (fit 2022-2024)",
+      "input": "input_2025_full",
+      "predictions": "reference_2025_full",
+      "model": "reference",
+      "window": [
+        [
+          "2025-06-01",
+          "2025-09-01"
+        ]
+      ],
+      "prediction_checks": {
+        "duplicate prediction keys": {
+          "status": "pass",
+          "violations": 0
+        },
+        "requests without a prediction": {
+          "status": "pass",
+          "violations": 0
+        },
+        "predictions without a request": {
+          "status": "pass",
+          "violations": 0
+        },
+        "missing, non-finite or out-of-range values": {
+          "status": "pass",
+          "violations": 0
+        },
+        "prediction rows outside the scope (ignored)": {
+          "status": "note",
+          "violations": 1834560
+        }
+      },
+      "issue_days_scored": 92,
+      "tasks": {
+        "A": {
+          "model": {
+            "cases": 76004,
+            "positives": 9832,
+            "positive_rate": 0.12936161254670805,
+            "auprc_norm": 0.28641164043461087,
+            "mae_risk": 0.15425639842383237,
+            "score": 42.624463072000005
+          },
+          "persistence": {
+            "cases": 76004,
+            "positives": 9832,
+            "positive_rate": 0.12936161254670805,
+            "auprc_norm": 0.23607234559076448,
+            "mae_risk": 0.16061647601463716,
+            "score": 38.69001401894141
+          },
+          "coverage": {
+            "requested": 88320,
+            "scored": 76004,
+            "excluded_no_truth": 12316,
+            "excluded_invalid_truth": 0,
+            "counties": {
+              "06037": {
+                "requested": 17664,
+                "scored": 17424,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9764784946236559
+              },
+              "12086": {
+                "requested": 17664,
+                "scored": 17584,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9926075268817204
+              },
+              "26163": {
+                "requested": 17664,
+                "scored": 17664,
+                "lowest_month": "2025-06",
+                "lowest_month_share": 1.0
+              },
+              "33015": {
+                "requested": 17664,
+                "scored": 5684,
+                "lowest_month": "2025-08",
+                "lowest_month_share": 0.3178763440860215
+              },
+              "48201": {
+                "requested": 17664,
+                "scored": 17648,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9979838709677419
+              }
+            }
+          }
+        },
+        "B": {
+          "model": {
+            "cases": 468552,
+            "positives": 60044,
+            "positive_rate": 0.12814799638033772,
+            "auprc_norm": 0.6197292867824503,
+            "mae_risk": 0.09148126985263824,
+            "score": 69.19266476236781
+          },
+          "persistence": {
+            "cases": 468552,
+            "positives": 60044,
+            "positive_rate": 0.12814799638033772,
+            "auprc_norm": 0.5783881775940012,
+            "mae_risk": 0.1000562833084419,
+            "score": 65.87770623683905
+          },
+          "coverage": {
+            "requested": 529920,
+            "scored": 468552,
+            "excluded_no_truth": 61368,
+            "excluded_invalid_truth": 0,
+            "counties": {
+              "06037": {
+                "requested": 105984,
+                "scored": 105180,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9855510752688172
+              },
+              "12086": {
+                "requested": 105984,
+                "scored": 105828,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9973118279569892
+              },
+              "26163": {
+                "requested": 105984,
+                "scored": 105984,
+                "lowest_month": "2025-06",
+                "lowest_month_share": 1.0
+              },
+              "33015": {
+                "requested": 105984,
+                "scored": 45600,
+                "lowest_month": "2025-08",
+                "lowest_month_share": 0.42338709677419356
+              },
+              "48201": {
+                "requested": 105984,
+                "scored": 105960,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9996639784946236
+              }
+            }
+          }
+        }
+      }
+    },
+    "frozen_package": {
+      "label": "2025-06-01 to 2025-08-31, `input_2025` package",
+      "role": "the June-August package of `make predict`; truth ends on 31 August",
+      "input": "input_2025",
+      "predictions": "frozen_package",
+      "model": "frozen ensemble",
+      "window": null,
+      "prediction_checks": {
+        "duplicate prediction keys": {
+          "status": "pass",
+          "violations": 0
+        },
+        "requests without a prediction": {
+          "status": "pass",
+          "violations": 0
+        },
+        "predictions without a request": {
+          "status": "pass",
+          "violations": 0
+        },
+        "missing, non-finite or out-of-range values": {
+          "status": "pass",
+          "violations": 0
+        },
+        "prediction rows outside the scope (ignored)": {
+          "status": "pass",
+          "violations": 0
+        }
+      },
+      "issue_days_scored": 92,
+      "tasks": {
+        "A": {
+          "model": {
+            "cases": 75556,
+            "positives": 9804,
+            "positive_rate": 0.12975806024670444,
+            "auprc_norm": 0.43816488011718974,
+            "mae_risk": 0.13361792493542557,
+            "score": 54.521917885403596
+          },
+          "persistence": {
+            "cases": 75556,
+            "positives": 9804,
+            "positive_rate": 0.12975806024670444,
+            "auprc_norm": 0.23760590061150574,
+            "mae_risk": 0.15993233497803708,
+            "score": 38.822134171412
+          },
+          "coverage": {
+            "requested": 88320,
+            "scored": 75556,
+            "excluded_no_truth": 12764,
+            "excluded_invalid_truth": 0,
+            "counties": {
+              "06037": {
+                "requested": 17664,
+                "scored": 17320,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9764784946236559
+              },
+              "12086": {
+                "requested": 17664,
+                "scored": 17480,
+                "lowest_month": "2025-08",
+                "lowest_month_share": 0.9818548387096774
+              },
+              "26163": {
+                "requested": 17664,
+                "scored": 17560,
+                "lowest_month": "2025-08",
+                "lowest_month_share": 0.9825268817204301
+              },
+              "33015": {
+                "requested": 17664,
+                "scored": 5652,
+                "lowest_month": "2025-08",
+                "lowest_month_share": 0.3125
+              },
+              "48201": {
+                "requested": 17664,
+                "scored": 17544,
+                "lowest_month": "2025-08",
+                "lowest_month_share": 0.9818548387096774
+              }
+            }
+          }
+        },
+        "B": {
+          "model": {
+            "cases": 468532,
+            "positives": 60042,
+            "positive_rate": 0.12814919792031282,
+            "auprc_norm": 0.6960401232730867,
+            "mae_risk": 0.08273257693762295,
+            "score": 75.13469482204093
+          },
+          "persistence": {
+            "cases": 468532,
+            "positives": 60042,
+            "positive_rate": 0.12814919792031282,
+            "auprc_norm": 0.5784010585649271,
+            "mae_risk": 0.10005328900124094,
+            "score": 65.8787471673385
+          },
+          "coverage": {
+            "requested": 529920,
+            "scored": 468532,
+            "excluded_no_truth": 61388,
+            "excluded_invalid_truth": 0,
+            "counties": {
+              "06037": {
+                "requested": 105984,
+                "scored": 105176,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9855510752688172
+              },
+              "12086": {
+                "requested": 105984,
+                "scored": 105824,
+                "lowest_month": "2025-07",
+                "lowest_month_share": 0.9973118279569892
+              },
+              "26163": {
+                "requested": 105984,
+                "scored": 105980,
+                "lowest_month": "2025-08",
+                "lowest_month_share": 0.9998879928315412
+              },
+              "33015": {
+                "requested": 105984,
+                "scored": 45596,
+                "lowest_month": "2025-08",
+                "lowest_month_share": 0.4232750896057348
+              },
+              "48201": {
+                "requested": 105984,
+                "scored": 105956,
+                "lowest_month": "2025-08",
+                "lowest_month_share": 0.9995519713261649
+              }
+            }
+          }
+        }
+      }
+    },
+    "reference_2024": {
+      "label": "2024",
+      "role": "chronological test (fit 2022-2023, selection on 2023)",
+      "input": "input_2024_full",
+      "predictions": "reference_2024",
+      "model": "reference",
+      "window": [
+        [
+          "2024-01-01",
+          "2025-01-01"
+        ]
+      ],
+      "prediction_checks": {
+        "duplicate prediction keys": {
+          "status": "pass",
+          "violations": 0
+        },
+        "requests without a prediction": {
+          "status": "pass",
+          "violations": 0
+        },
+        "predictions without a request": {
+          "status": "pass",
+          "violations": 0
+        },
+        "missing, non-finite or out-of-range values": {
+          "status": "pass",
+          "violations": 0
+        },
+        "prediction rows outside the scope (ignored)": {
+          "status": "pass",
+          "violations": 0
+        }
+      },
+      "issue_days_scored": 366,
+      "tasks": {
+        "A": {
+          "model": {
+            "cases": 301372,
+            "positives": 25742,
+            "positive_rate": 0.08541603068632786,
+            "auprc_norm": 0.4396585879904393,
+            "mae_risk": 0.11840040556749294,
+            "score": 55.014383960095614
+          },
+          "persistence": {
+            "cases": 301372,
+            "positives": 25742,
+            "positive_rate": 0.08541603068632786,
+            "auprc_norm": 0.37081163479696644,
+            "mae_risk": 0.12238285593469543,
+            "score": 49.7513012114051
+          },
+          "coverage": {
+            "requested": 351360,
+            "scored": 301372,
+            "excluded_no_truth": 49988,
+            "excluded_invalid_truth": 0,
+            "counties": {
+              "06037": {
+                "requested": 70272,
+                "scored": 69216,
+                "lowest_month": "2024-05",
+                "lowest_month_share": 0.9650537634408602
+              },
+              "12086": {
+                "requested": 70272,
+                "scored": 69488,
+                "lowest_month": "2024-10",
+                "lowest_month_share": 0.9112903225806451
+              },
+              "26163": {
+                "requested": 70272,
+                "scored": 70016,
+                "lowest_month": "2024-12",
+                "lowest_month_share": 0.9811827956989247
+              },
+              "33015": {
+                "requested": 70272,
+                "scored": 23092,
+                "lowest_month": "2024-02",
+                "lowest_month_share": 0.16379310344827586
+              },
+              "48201": {
+                "requested": 70272,
+                "scored": 69560,
+                "lowest_month": "2024-02",
+                "lowest_month_share": 0.9454022988505747
+              }
+            }
+          }
+        },
+        "B": {
+          "model": {
+            "cases": 1851524,
+            "positives": 157677,
+            "positive_rate": 0.08516065684268743,
+            "auprc_norm": 0.6558435676065966,
+            "mae_risk": 0.06604939954985979,
+            "score": 72.53703258174825
+          },
+          "persistence": {
+            "cases": 1851524,
+            "positives": 157677,
+            "positive_rate": 0.08516065684268743,
+            "auprc_norm": 0.617339825573669,
+            "mae_risk": 0.06965911905999166,
+            "score": 69.55900894152538
+          },
+          "coverage": {
+            "requested": 2108160,
+            "scored": 1851524,
+            "excluded_no_truth": 256636,
+            "excluded_invalid_truth": 0,
+            "counties": {
+              "06037": {
+                "requested": 421632,
+                "scored": 418472,
+                "lowest_month": "2024-05",
+                "lowest_month_share": 0.9754704301075269
+              },
+              "12086": {
+                "requested": 421632,
+                "scored": 417896,
+                "lowest_month": "2024-10",
+                "lowest_month_share": 0.9136424731182796
+              },
+              "26163": {
+                "requested": 421632,
+                "scored": 420884,
+                "lowest_month": "2024-05",
+                "lowest_month_share": 0.9872311827956989
+              },
+              "33015": {
+                "requested": 421632,
+                "scored": 175200,
+                "lowest_month": "2024-02",
+                "lowest_month_share": 0.21994731800766285
+              },
+              "48201": {
+                "requested": 421632,
+                "scored": 419072,
+                "lowest_month": "2024-02",
+                "lowest_month_share": 0.9522270114942529
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "uncertainty": {
+    "artifacts/evaluation/bootstrap_2025_frozen.json": {
+      "sha256": "d4c2606c2b8171f14ee0d899dd77ff6908262c5bc78d2fb4310ca97a062bab66",
+      "predictions": "frozen_2025_full.csv"
+    },
+    "artifacts/evaluation/bootstrap_2025_reference.json": {
+      "sha256": "911bc9f1b2932572243f2470edd219a97e6d24b44f49e34a029d5301b8effbd3",
+      "predictions": "reference_2025_full.csv"
+    }
+  },
+  "seconds": 64
+}

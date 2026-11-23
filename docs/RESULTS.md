@@ -20,7 +20,8 @@ usually last longer than a few hours.
 |---|---|---:|---:|
 | 2025-06-01 to 2025-08-31 | member and weight selection | **54.45** / 38.69 | **75.13** / 65.88 |
 | the other 9 months of 2025 | retrospective; January–May informed one fallback decision | **55.00** / 46.92 | **72.75** / 66.59 |
-| all of 2025 | | **54.88** / 43.92 | **73.44** / 66.33 |
+| all of 2025 | selection window and retrospective months together | **54.88** / 43.92 | **73.44** / 66.33 |
+| 2025-06-01 to 2025-08-31, `input_2025` package | the June–August package of `make predict`; truth ends on 31 August | **54.52** / 38.82 | **75.13** / 65.88 |
 <!-- /run-report:headline -->
 
 The first three rows use the full-year 2025 inputs. The last row is the June–August package that `make predict`
@@ -92,10 +93,11 @@ for the delay experiment.
 ## 5. Reference model trained from scratch
 
 <!-- run-report:reference -->
-| Evaluation | Reference | Persistence | Frozen ensemble |
+| Evaluation (Task A / B) | Reference | Persistence | Frozen ensemble |
 |---|---:|---:|---:|
-| 2024 (chronological test), A / B | 55.01 / 72.54 | 49.75 / 69.56 | in its training data |
-| 2025 full year (retrospective) | 44.30 / 68.87 | 43.92 / 66.33 | 54.88 / 73.44 |
+| 2024 chronological test | **55.01 / 72.54** | 49.75 / 69.56 | in its training data |
+| 2025 full year (retrospective) | 44.30 / 68.87 | 43.92 / 66.33 | **54.88 / 73.44** |
+| 2025 June–August | 42.62 / 69.19 | 38.69 / 65.88 | **54.45 / 75.13** |
 <!-- /run-report:reference -->
 
 These are v2 results, after a fix on 2026-11-18. The v1 results were withdrawn because missing labels had been read as
@@ -125,13 +127,14 @@ The model and persistence are scored on one cohort: the requests whose truth is 
 without truth are excluded and counted (`sql/analysis/coverage.sql`; rules in [SQL.md](SQL.md#scoring-one-cohort-for-every-model)).
 
 <!-- run-report:coverage -->
-| 2025, full year | Requested | Scored | Share scored | Lowest month |
-|---|---:|---:|---:|---|
-| Task A, all counties | 350,400 | 294,092 | 83.9 % | |
-| Task B, all counties | 2,102,400 | 1,809,572 | 86.1 % | |
-| Task A, Rockingham NH | 70,080 | 17,356 | 24.8 % | 15.3 % (February) |
-| Task B, Rockingham NH | 420,480 | 140,460 | 33.4 % | 22.0 % (January) |
-| other four counties | | | 97.9–99.9 % | 90.1 % (Miami-Dade A, March) |
+| 2025, full year | Task A scored / requested | Share | Lowest month | Task B scored / requested | Share | Lowest month |
+|---|---:|---:|---|---:|---:|---|
+| all counties | 294,092 / 350,400 | 83.9 % |  | 1,809,572 / 2,102,400 | 86.1 % |  |
+| Wayne, MI | 69,872 / 70,080 | 99.7 % | 98.3 % (December) | 420,152 / 420,480 | 99.9 % | 99.4 % (March) |
+| Harris, TX | 69,568 / 70,080 | 99.3 % | 95.7 % (May) | 418,724 / 420,480 | 99.6 % | 96.1 % (May) |
+| Rockingham, NH | 17,356 / 70,080 | 24.8 % | 15.3 % (February) | 140,460 / 420,480 | 33.4 % | 22.0 % (January) |
+| Los Angeles, CA | 68,584 / 70,080 | 97.9 % | 94.1 % (January) | 415,076 / 420,480 | 98.7 % | 94.9 % (January) |
+| Miami-Dade, FL | 68,712 / 70,080 | 98.0 % | 90.1 % (March) | 415,160 / 420,480 | 98.7 % | 90.9 % (March) |
 
 No case is excluded for invalid truth. For June–August 2025, 86.1 % (A) and 88.4 % (B) of the requests are scored.
 <!-- /run-report:coverage -->
@@ -157,11 +160,11 @@ in code before it was run (`outage_forecast.evaluation`, commit `5872df1`; the r
 | 2025, 365 issue days | Cases | Risk MAE, model / persistence | MAE difference, 95 % CI | Score difference, 95 % CI |
 |---|---:|---|---|---|
 | **Frozen ensemble, Task A** (primary) | 294,092 | 0.104 / 0.122 | **−0.018 [−0.028, −0.007]** | +11.0 [+5.6, +16.1] |
-| Frozen ensemble, Task B | 1,809,572 | 0.067 / 0.078 | −0.012 [−0.015, −0.008] | +7.1 [+5.2, +9.0] |
-| Reference model, Task A | 294,092 | 0.124 / 0.122 | +0.003 [−0.007, +0.013] | +0.4 [−3.4, +4.0] |
+| Frozen ensemble, Task B | 1,809,572 | 0.067 / 0.078 | −0.011 [−0.015, −0.008] | +7.1 [+5.2, +9.0] |
+| Reference model, Task A | 294,092 | 0.124 / 0.122 | +0.003 [−0.007, +0.013] | +0.4 [−3.4, +3.9] |
 | Reference model, Task B | 1,809,572 | 0.074 / 0.078 | −0.004 [−0.006, −0.002] | +2.5 [+1.8, +3.5] |
 
-With 3- and 14-day blocks, the MAE intervals of every row keep the same sign as with 7-day blocks.
+With 3- and 14-day blocks, every MAE interval reaches the same conclusion as with 7-day blocks.
 <!-- /run-report:bootstrap -->
 
 - **Frozen ensemble.** Both tasks beat persistence; neither interval comes close to zero. The Task A risk error is

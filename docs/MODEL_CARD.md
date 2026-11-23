@@ -47,8 +47,8 @@ baseline.
 <!-- run-report:model-card -->
 | | Task A | Task B |
 |---|---:|---:|
-| June–August 2025 (selection window) | 54.45 (persistence 38.69) | 75.13 (65.88) |
-| other 9 months of 2025 (retrospective) | 55.00 (46.92) | 72.75 (66.59) |
+| June–August 2025 (selection window) | 54.45 (persistence 38.69) | 75.13 (persistence 65.88) |
+| other 9 months of 2025 (retrospective) | 55.00 (persistence 46.92) | 72.75 (persistence 66.59) |
 <!-- /run-report:model-card -->
 
 On 2025 the gain over persistence is clear: score difference A +11.0 [5.6, 16.1] and B +7.1 [5.2, 9.0] (paired
