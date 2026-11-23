@@ -213,3 +213,48 @@ the pinned CPU requirements (`torch 2.11.0+cpu`). It then ran the quick start: `
   the report, which were made with the CUDA build of PyTorch (`2.11.0+cu128`, run on the CPU). The two builds use
   different float32 kernels: predicted shares differ by at most 2 × 10⁻⁷ and predicted risks by at most 7 × 10⁻⁶.
 - **Determinism.** Within one environment, inference is deterministic: repeated runs give identical files.
+
+## 11. Event probability and alert budget
+
+Two questions that the challenge score does not answer:
+
+- Can the risk be read as a probability?
+- How often does an alert come before a new outage, at a rate someone could act on?
+
+Both analyses were fixed in code before they were run (`outage_forecast.calibration` and `outage_forecast.alerts`,
+`PROTOCOL` in each module; the results are in a later commit). Both use the frozen ensemble's predictions for the full
+year 2025. Their parameters are fitted on June–August 2025, which also selected the ensemble, and they are evaluated
+on September–December 2025. This is a chronological replay, not an untouched test.
+
+**Event probability.** The challenge risk sigmoid(4000 (x̂ − x₀)) is a steep soft threshold of a point forecast, not a
+probability (section 6).
+
+- **What is added.** A separate `p_event` = sigmoid(a + b · asinh(4000 (x̂ − x₀))), with b ≥ 0. One map per task is
+  shared by leads and architectures, and it is fitted by maximum likelihood.
+- **Fit data.** The fit uses only cases whose target and truth publication come before 1 September.
+- **What stays the same.** The challenge output and score do not change.
+- **Primary statistic.** Brier score of `p_event` minus Brier score of the challenge risk, per task, for the event
+  "true risk ≥ 0.5". Paired 7-day blocks, 2,000 resamples, seed 0; 14-day blocks as sensitivity.
+- **Secondary.** Log loss, and reliability in ten bins.
+
+**Alert budget** (Task A, ARC01 threshold 0.100 %):
+
+- **Onset.** The first hourly share at or above the threshold after 6 complete hours below it. A gap breaks the quiet
+  run, and one episode gives one onset (`sql/events/`).
+- **Alerting.** At each daily issue (00 UTC), a county that has been quiet for 6 hours, in the records visible at T,
+  is alerted when its score exceeds a cutoff. Otherwise the rule abstains.
+- **Scores.** Three scores are compared:
+  - the model's maximum predicted share over the next 24 h;
+  - near-threshold persistence (the latest visible hourly share);
+  - the maximum HRRR gust over the next 24 h.
+- **Budget.** The cutoff of each county and score is fitted on June–August from the scores alone, so that at most 4
+  (or 8) issues per 30 days exceed it. It is then frozen.
+- **Scoring.** An alert is a hit when an onset falls in its 24-hour window. Each alert is credited with at most one
+  onset, and only fully observed windows count. Recall is matched onsets / onsets, with abstained days counted as
+  misses. Precision is hits / alerts, and lead time is the time to the first onset.
+- **Primary statistic.** Recall of the model minus recall of persistence at 4 alerts per county per 30 days. Paired
+  7-day blocks, 2,000 resamples, seed 0.
+- **Secondary.** The same against the gust score, precision, 8 alerts per 30 days, and 14-day blocks.
+- **Large outages (0.5 %).** Counts only; they are too few for intervals.
+
+Results: in the next commit.
