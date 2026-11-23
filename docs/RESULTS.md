@@ -200,3 +200,16 @@ It also records the provenance of the run:
 
 `tests/test_run_report.py` runs in CI and fails when a generated table no longer matches the committed report, or
 when a bootstrap file changed after the report was made.
+
+**Clean-checkout check (2026-11-23).** A fresh clone of `476dc3e` was set up in an empty virtual environment from
+the pinned CPU requirements (`torch 2.11.0+cpu`). It then ran the quick start: `make setup`, `make lint`,
+`make sql-smoke`, `make models data`, `make test`, `make predict` (49 s) and `make warehouse`.
+
+- **Tests.** 54 tests passed; the full-window parity test was skipped because it needs `out/predictions.csv`, and
+  passed when run after `make predict`.
+- **Downloaded inputs.** They are byte-identical to the ones in the report.
+- **Predictions.** The 2025 full-year inference (3.4 min) and the reference model's predictions reproduce every
+  score to within 6 × 10⁻⁶, so every published number is unchanged. The files are not byte-identical to the ones in
+  the report, which were made with the CUDA build of PyTorch (`2.11.0+cu128`, run on the CPU). The two builds use
+  different float32 kernels: predicted shares differ by at most 2 × 10⁻⁷ and predicted risks by at most 7 × 10⁻⁶.
+- **Determinism.** Within one environment, inference is deterministic: repeated runs give identical files.
