@@ -81,7 +81,7 @@ small correction to persistence.
 - **2025, Task B.** +2.5 over persistence. It beats persistence in 10 of 12 months; January (−0.2) and May (−0.5) are
   roughly level. It is 4.6 points below the frozen ensemble.
 - **2025, Task A.** +0.4 over persistence for the year. This is within noise: the paired block-bootstrap interval is
-  [−3.4, +4.0] ([RESULTS.md](RESULTS.md#9-uncertainty-paired-block-bootstrap)), so on 2025 the model cannot be told
+  [−3.4, +3.9] ([RESULTS.md](RESULTS.md#9-uncertainty-paired-block-bootstrap)), so on 2025 the model cannot be told
   apart from persistence. It wins 10 of 12 months by +0.7 to +9.4, and loses January
   (−8.8) and February (−15.6). Those are the months of the multi-day Los Angeles wildfire outages, which reached up to
   46 % of customers. During such an event a held observation is nearly perfect, while a model that forecasts each

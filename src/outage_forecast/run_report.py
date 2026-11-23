@@ -171,7 +171,7 @@ def evaluate(con, predictions: Path, window) -> dict:
                                    'excluded_no_truth': sum(r['excluded_no_truth'] for r in rows),
                                    'excluded_invalid_truth': sum(r['excluded_invalid_truth'] for r in rows),
                                    'counties': counties}
-    issue_days = con.execute("SELECT count(DISTINCT issue_s // 86400) FROM gold.score_cohort").fetchall()[0][0]
+    issue_days = con.execute("SELECT count(DISTINCT floor(issue_s / 86400)) FROM gold.score_cohort").fetchall()[0][0]
     return {'prediction_checks': checks, 'issue_days_scored': issue_days, 'tasks': tasks}
 
 
@@ -267,8 +267,9 @@ def table_reference(r: dict, ctx: dict) -> str:
             '| in its training data |']
     for ref, frozen, label in (('reference_2025_year', 'frozen_2025_year', '2025 full year (retrospective)'),
                                ('reference_2025_jun_aug', 'frozen_2025_jun_aug', '2025 June–August')):
-        for t in ('A', 'B'):      # one cohort per window: persistence is the same for both models
-            assert e[ref]['tasks'][t]['persistence']['score'] == e[frozen]['tasks'][t]['persistence']['score']
+        for t in ('A', 'B'):      # one cohort per window: persistence is the same for both models (up to summation order)
+            assert e[ref]['tasks'][t]['persistence']['cases'] == e[frozen]['tasks'][t]['persistence']['cases']
+            assert abs(e[ref]['tasks'][t]['persistence']['score'] - e[frozen]['tasks'][t]['persistence']['score']) < 1e-9
         rows.append(f"| {label} | {both(ref, 'model')} | {both(ref, 'persistence')} | **{both(frozen, 'model')}** |")
     return '\n'.join(rows)
 
